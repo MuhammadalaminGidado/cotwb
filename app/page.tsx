@@ -5,7 +5,7 @@ export default function Home() {
     <div className="flex flex-1 flex-col items-center justify-center bg-bg px-6 py-16">
       <main className="flex w-full max-w-2xl flex-col gap-8 rounded-xl border border-border bg-surface p-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
+          <h1 className="font-serif text-2xl font-semibold tracking-tight text-text-primary">
             Literary Community
           </h1>
           <ThemeToggle />
