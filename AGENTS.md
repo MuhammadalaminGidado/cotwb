@@ -34,6 +34,7 @@ Owns implementation and verification of each task the Planner hands off.
 - Self-check against the phase's **Acceptance** criteria in `PLAN.md` before declaring a task done — do not hand off to Critic with acceptance criteria unmet.
 - Follow existing conventions rather than introducing new patterns — see **Project Conventions** below. If a convention seems wrong for a specific case, flag it to Planner rather than silently deviating.
 - Run the relevant checks locally before handoff: typecheck, lint, and (from Phase 1 onward) the hardcoded-color grep check.
+- Commit messages follow `phase <N>: <what was built/changed> — <key details>`, with enough detail to understand the change without reading the diff. Examples: `phase 2: database schema — 17 tables, 4 enums, seed with 3 users, 3 pieces`; `phase 4.3: Tiptap editor — autosave via debounced Server Action`.
 
 **Does not**
 
@@ -74,6 +75,7 @@ Owns status visibility. Does not implement, review, or plan — purely reports s
 - Judge whether work is correct — that's Critic's job. Tracker reports Critic's verdict, doesn't form its own.
 - Decide what's next — that's Planner's job. Tracker shows the cursor, doesn't choose where it points.
 - Re-scan the project to "confirm" state — the whole point of the design below is that Tracker never needs to.
+- Commit messages follow `tracker: phase <N> <status> — <key details>`, with enough detail to understand the phase transition without reading the diff. Examples: `tracker: phase 2 done — 17 tables migrated, seed verified`; `tracker: phase 3 in progress — 3.1 x, 3.2 pending`.
 
 **`PROGRESS.md` format**
 
