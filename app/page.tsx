@@ -19,17 +19,17 @@ export default function Home() {
             <p className="text-sm font-medium text-text-primary">Background</p>
             <p className="text-xs text-text-muted">bg-bg</p>
           </div>
-          <div className="rounded-lg border border-border bg-accent p-4">
-            <p className="text-sm font-medium text-accent-contrast">Accent</p>
-            <p className="text-xs text-accent-contrast opacity-80">bg-accent</p>
+          <div className="rounded-lg border border-border bg-accent-primary p-4">
+            <p className="text-sm font-medium text-text-inverse">Accent Primary</p>
+            <p className="text-xs text-text-inverse opacity-80">bg-accent-primary</p>
           </div>
           <div className="rounded-lg border border-border bg-danger p-4">
-            <p className="text-sm font-medium text-accent-contrast">Danger</p>
-            <p className="text-xs text-accent-contrast opacity-80">bg-danger</p>
+            <p className="text-sm font-medium text-text-inverse">Danger</p>
+            <p className="text-xs text-text-inverse opacity-80">bg-danger</p>
           </div>
           <div className="rounded-lg border border-border bg-success p-4">
-            <p className="text-sm font-medium text-accent-contrast">Success</p>
-            <p className="text-xs text-accent-contrast opacity-80">bg-success</p>
+            <p className="text-sm font-medium text-text-inverse">Success</p>
+            <p className="text-xs text-text-inverse opacity-80">bg-success</p>
           </div>
         </div>
       </main>

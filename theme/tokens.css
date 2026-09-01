@@ -1,23 +1,53 @@
 :root {
-  --color-bg: #ffffff;
-  --color-surface: #f5f5f5;
-  --color-text-primary: #171717;
-  --color-text-muted: #737373;
-  --color-accent: #2563eb;
-  --color-accent-contrast: #ffffff;
-  --color-border: #e5e5e5;
-  --color-danger: #dc2626;
-  --color-success: #16a34a;
+  /* accents */
+  --color-accent-primary: #2C5B7C;
+  /* warm blue — nav, primary buttons, links */
+  --color-accent-primary-light: #4A7FA5;
+  --color-accent-secondary: #E07A3E;
+  /* orange — CTAs, highlights, tags */
+  --color-accent-secondary-light: #F0975C;
+  --color-accent-tertiary: #A9825C;
+  /* light brown — borders, secondary text, editorial UI */
+  --color-accent-tertiary-light: #D9C2A3;
+  --color-accent-quaternary: #5B8C5A;
+  /* green — success states, "new" badges, prompts */
+  --color-accent-quaternary-light: #8FB88C;
+
+  /* surfaces */
+  --color-bg: #FAF7F2;
+  --color-surface: #FFFFFF;
+  --color-border: #E4DCD0;
+
+  /* text */
+  --color-text-primary: #2A2A28;
+  --color-text-muted: #6B6560;
+  --color-text-inverse: #FAF7F2;
+
+  /* semantic */
+  --color-success: #5B8C5A;
+  --color-danger: #B84C3E;
+  --color-warning: #E0A23E;
 }
 
 [data-theme="dark"] {
-  --color-bg: #0a0a0a;
-  --color-surface: #1a1a1a;
-  --color-text-primary: #ededed;
-  --color-text-muted: #a3a3a3;
-  --color-accent: #60a5fa;
-  --color-accent-contrast: #0a0a0a;
-  --color-border: #2a2a2a;
-  --color-danger: #f87171;
-  --color-success: #4ade80;
+  --color-accent-primary: #6FA0C4;
+  --color-accent-primary-light: #8FB6D6;
+  --color-accent-secondary: #E8975E;
+  --color-accent-secondary-light: #F0AD7E;
+  --color-accent-tertiary: #C4A67E;
+  --color-accent-tertiary-light: #9C8362;
+  --color-accent-quaternary: #7CA97A;
+  --color-accent-quaternary-light: #9EC29C;
+
+  --color-bg: #1E1C1A;
+  --color-surface: #29261F;
+  --color-border: #3A362E;
+
+  --color-text-primary: #F2EEE6;
+  --color-text-muted: #ABA398;
+  --color-text-inverse: #2A2A28;
+
+  --color-success: #7CA97A;
+  --color-danger: #D0685A;
+  --color-warning: #E8B15E;
 }
