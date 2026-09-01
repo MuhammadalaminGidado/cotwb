@@ -3,8 +3,8 @@
 Phase 0 — Scaffolding             done
 Phase 1 — Theming Foundation      done
 Phase 2 — Database Schema         done
-Phase 3 — Auth                    pending
-Phase 4 — Core Writing Flow       pending
+Phase 3 — Auth                    done
+Phase 4 — Core Writing Flow       done
 Phase 5 — Public Discovery        pending
 Phase 6 — Comments & Reactions    pending
 Phase 7 — Collections/Groups      pending
