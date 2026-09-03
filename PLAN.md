@@ -1,4 +1,4 @@
-# Literary Community App — Agent Build Plan
+# Chip of the Writer's Block (COTWB) — Agent Build Plan
 
 Stack: Next.js (App Router) + TypeScript + Drizzle + Postgres + Tailwind + Tiptap + Inngest + Clerk.
 Execution model: each phase is a checkpoint. Agent should not proceed to next phase until acceptance criteria for current phase pass. Commit after each numbered step.

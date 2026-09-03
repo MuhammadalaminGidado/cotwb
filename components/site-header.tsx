@@ -15,8 +15,9 @@ export async function SiteHeader() {
           <Link
             href="/"
             className="font-serif text-lg font-semibold tracking-tight text-text-primary"
+            title="Chip of the Writer's Block"
           >
-            Literary Community
+            COTWB
           </Link>
           <nav className="hidden items-center gap-4 sm:flex">
             <Link

@@ -10,14 +10,17 @@ export default async function Home() {
       <SiteHeader />
       <div className="flex flex-1 flex-col items-center justify-center bg-bg px-6 py-16">
         <main className="flex w-full max-w-2xl flex-col gap-8 rounded-xl border border-border bg-surface p-8">
-          <div className="flex items-center justify-between">
+          <div>
             <h1 className="font-serif text-2xl font-semibold tracking-tight text-text-primary">
-              Literary Community
+              Chip of the Writer&apos;s Block
             </h1>
+            <p className="mt-1 text-xs font-medium tracking-[0.2em] text-text-muted uppercase">
+              COTWB
+            </p>
           </div>
           <p className="text-base leading-6 text-text-muted">
             A place for writers and readers. Create pieces, share work, and
-            discover writing from the community.
+            discover writing from the COTWB community.
           </p>
 
           {user ? (
