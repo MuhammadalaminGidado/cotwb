@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
 import { hasClerk } from "@/lib/clerk-config";
 
@@ -32,20 +31,10 @@ export default async function AppLayout({
   const user = await currentUser();
   if (!user) {
     // Clerk session exists but local users row hasn't been created yet
-    // (webhook race after signup). Redirect to onboarding which handles
-    // the polling state centrally (T1 Option A). Preserve intended destination.
-    const { headers } = await import("next/headers");
-    const { getSafeRedirect } = await import("@/lib/redirect");
-    const hdrs = await headers();
-    const raw = hdrs.get("x-pathname") ?? "/";
-    const safe = getSafeRedirect(raw, "/");
-    // Don't loop if we're already on /onboarding
-    if (safe?.startsWith("/onboarding")) {
-      redirect("/onboarding");
-    }
-    const target = safe && safe !== "/" ? safe : "/";
-    const redirectUrl = encodeURIComponent(target);
-    redirect(`/onboarding?redirect_url=${redirectUrl}`);
+    // (webhook race after signup). Show a lightweight polling state instead
+    // of redirecting to sign-in. See auth-flow.md edge case.
+    const { OnboardingWait } = await import("@/components/onboarding-wait");
+    return <OnboardingWait />;
   }
   return <>{children}</>;
 }

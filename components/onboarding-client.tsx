@@ -85,7 +85,6 @@ export function OnboardingClient({
             type="button"
             onClick={() => {
               void pollReady();
-              router.refresh();
             }}
             className="mt-4 rounded-full bg-accent-primary px-5 py-2 text-sm font-medium text-text-inverse"
           >
