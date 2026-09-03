@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { canModerate, currentUser } from "@/lib/auth";
 import { getReviewQueuePieces } from "@/lib/db/queries/pieces";
 import { ReviewQueueActions } from "@/components/review-queue-actions";
@@ -12,9 +13,10 @@ export default async function ReviewQueuePage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-8">
-      <h1 className="font-serif text-2xl font-semibold text-text-primary">
-        Review queue
-      </h1>
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-primary">
+        ← Back to home
+      </Link>
+      <h1 className="mt-3 font-serif text-2xl font-semibold text-text-primary">Review queue</h1>
       <p className="mt-2 text-sm text-text-muted">
         {pieces.length === 0
           ? "No pieces awaiting review."

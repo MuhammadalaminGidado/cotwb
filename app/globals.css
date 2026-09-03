@@ -21,7 +21,10 @@
   --color-danger: var(--color-danger);
   --color-warning: var(--color-warning);
   --ease-out: var(--ease-out);
+  --ease-in: var(--ease-in);
   --ease-spring: var(--ease-spring);
+  --duration-fast: var(--duration-fast);
+  --duration-medium: var(--duration-medium);
   --font-sans: var(--font-inter);
   --font-serif: var(--font-playfair);
 }

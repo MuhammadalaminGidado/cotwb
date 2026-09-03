@@ -30,6 +30,7 @@ export function OnboardingClient({
   const [isPending, startTransition] = useTransition();
 
   const [step, setStep] = useState<1 | 2>(1);
+  const [direction, setDirection] = useState<1 | -1>(1);
   const [wantWriter, setWantWriter] = useState(initialIsWriter ? true : false);
   const [digestEnabled, setDigestEnabled] = useState(initialDigestEnabled);
 
@@ -182,13 +183,17 @@ export function OnboardingClient({
         <div className="mb-4 flex items-center justify-between">
           <p className="text-xs font-medium tracking-wide text-text-muted" aria-live="polite">Step {step} of 2</p>
           <div className="flex gap-1.5" aria-hidden>
-            <span className={`h-1.5 w-6 rounded-full transition-colors ${step === 1 ? "bg-accent-primary" : "bg-border"}`} />
-            <span className={`h-1.5 w-6 rounded-full transition-colors ${step === 2 ? "bg-accent-primary" : "bg-border"}`} />
+            <span className={`h-1.5 w-6 rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] motion-reduce:transition-none ${step === 1 ? "bg-accent-primary" : "bg-border"}`} />
+            <span className={`h-1.5 w-6 rounded-full transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] motion-reduce:transition-none ${step === 2 ? "bg-accent-primary" : "bg-border"}`} />
           </div>
         </div>
 
-        {step === 1 ? (
-          <>
+        <div className="relative grid">
+          {/* Step 1 — Role */}
+          <div
+            aria-hidden={step !== 1}
+            className={`col-start-1 row-start-1 will-change-transform transition-[transform,opacity] duration-[var(--duration-medium)] ease-[var(--ease-out)] motion-reduce:transition-none ${step === 1 ? "translate-x-0 opacity-100" : direction === 1 ? "-translate-x-4 opacity-0 pointer-events-none" : "translate-x-4 opacity-0 pointer-events-none"}`}
+          >
             <h2 className="text-base font-semibold tracking-tight text-text-primary">How do you want to get started?</h2>
             <p className="mt-1.5 text-sm leading-6 text-text-muted">Pick a starting point. You can switch anytime in settings.</p>
             <div className="mt-5 grid gap-3">
@@ -201,38 +206,38 @@ export function OnboardingClient({
                 <span className="mt-0.5 hidden h-5 w-5 shrink-0 items-center justify-center rounded-full border border-accent-primary bg-accent-primary text-[10px] leading-none text-text-inverse sm:flex" aria-hidden>✓</span>
               </label>
 
-              <label className={`flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3.5 text-left transition-colors duration-150 ease-out motion-reduce:transition-none ${wantWriter ? "border-accent-primary bg-accent-primary/10 shadow-sm" : "border-border bg-surface hover:bg-bg"}`}>
-                <input
-                  type="checkbox"
-                  checked={wantWriter}
-                  onChange={(e) => setWantWriter(e.target.checked)}
-                  className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-accent-primary"
-                  aria-label="I want to write too"
-                />
+              <label className={`flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3.5 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] motion-reduce:transition-none ${wantWriter ? "border-accent-primary bg-accent-primary/10 shadow-sm" : "border-border bg-surface hover:bg-bg"}`}>
+                <input type="checkbox" checked={wantWriter} onChange={(e) => setWantWriter(e.target.checked)} className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-accent-primary" aria-label="I want to write too" />
                 <span className="min-w-0 flex-1">
                   <span className="block text-sm font-semibold text-text-primary">I want to write too</span>
                   <span className="mt-1 block text-xs leading-5 text-text-muted">Create drafts and submit for review. You can’t undo this yourself — only an admin can revoke.</span>
                 </span>
-                <span
-                  className={`mt-0.5 hidden h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] leading-none sm:flex ${wantWriter ? "border-accent-primary bg-accent-primary text-text-inverse" : "border-border bg-surface text-transparent"}`}
-                  aria-hidden
-                >
-                  ✓
-                </span>
+                <span className={`mt-0.5 hidden h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] leading-none sm:flex ${wantWriter ? "border-accent-primary bg-accent-primary text-text-inverse" : "border-border bg-surface text-transparent"}`} aria-hidden>✓</span>
               </label>
             </div>
-            {error ? <p className="mt-3 text-sm text-danger" role="alert">{error}</p> : null}
+            {error && step === 1 ? <p className="mt-3 text-sm text-danger" role="alert">{error}</p> : null}
             <div className="mt-5 flex gap-3">
-              <button type="button" onClick={() => setStep(2)} className="flex-1 cursor-pointer rounded-full bg-accent-primary px-5 py-2.5 text-sm font-medium text-text-inverse shadow-sm transition-all duration-150 ease-out hover:bg-accent-primary-light active:scale-[0.97] motion-reduce:transition-none">
+              <button
+                type="button"
+                onClick={() => {
+                  setDirection(1);
+                  setStep(2);
+                }}
+                className="flex-1 cursor-pointer rounded-full bg-accent-primary px-5 py-2.5 text-sm font-medium text-text-inverse shadow-sm transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-accent-primary-light active:scale-[0.97] motion-reduce:transition-none"
+              >
                 Next
               </button>
               <button type="button" onClick={handleSkipPhase1} disabled={isPending} className="cursor-pointer rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-bg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none">
                 Skip
               </button>
             </div>
-          </>
-        ) : (
-          <>
+          </div>
+
+          {/* Step 2 — Mailing */}
+          <div
+            aria-hidden={step !== 2}
+            className={`col-start-1 row-start-1 will-change-transform transition-[transform,opacity] duration-[var(--duration-medium)] ease-[var(--ease-out)] motion-reduce:transition-none ${step === 2 ? "translate-x-0 opacity-100" : direction === 1 ? "translate-x-4 opacity-0 pointer-events-none" : "-translate-x-4 opacity-0 pointer-events-none"}`}
+          >
             <h2 className="text-base font-semibold tracking-tight text-text-primary">Mailing preference</h2>
             <p className="mt-1.5 text-sm leading-6 text-text-muted">Weekly digest will start when we launch digests. Your selection is tracked now.</p>
             <label className="mt-5 flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-border bg-bg px-3 py-3 transition-colors hover:bg-surface">
@@ -240,20 +245,28 @@ export function OnboardingClient({
               <input type="checkbox" checked={digestEnabled} onChange={(e) => setDigestEnabled(e.target.checked)} className="h-4 w-4 shrink-0 cursor-pointer accent-accent-primary" aria-label="Weekly digest" />
             </label>
             <p className="mt-2 text-xs leading-5 text-text-muted">{digestEnabled ? "You’ll be included when digests launch." : "No digest emails — you can enable later."}</p>
-            {error ? <p className="mt-3 text-sm text-danger" role="alert">{error}</p> : null}
+            {error && step === 2 ? <p className="mt-3 text-sm text-danger" role="alert">{error}</p> : null}
             <div className="mt-5 flex gap-3">
-              <button type="button" onClick={() => setStep(1)} disabled={isPending} className="cursor-pointer rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-bg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none">
+              <button
+                type="button"
+                onClick={() => {
+                  setDirection(-1);
+                  setStep(1);
+                }}
+                disabled={isPending}
+                className="cursor-pointer rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-bg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none"
+              >
                 Back
               </button>
-              <button type="button" onClick={handleComplete} disabled={isPending} className="flex-1 cursor-pointer rounded-full bg-accent-primary px-5 py-2.5 text-sm font-medium text-text-inverse shadow-sm transition-all duration-150 ease-out hover:bg-accent-primary-light active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
+              <button type="button" onClick={handleComplete} disabled={isPending} className="flex-1 cursor-pointer rounded-full bg-accent-primary px-5 py-2.5 text-sm font-medium text-text-inverse shadow-sm transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-accent-primary-light active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
                 {isPending ? "Saving…" : "Continue"}
               </button>
               <button type="button" onClick={handleSkipPhase2} disabled={isPending} className="cursor-pointer rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-bg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none">
                 Skip
               </button>
             </div>
-          </>
-        )}
+          </div>
+        </div>
       </div>
       <p className="text-center text-xs leading-5 text-text-muted">You can change role and mailing anytime in Settings.</p>
     </div>
