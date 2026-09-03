@@ -22,8 +22,13 @@ export async function currentUser(): Promise<LocalUser | null> {
     return user ?? null;
   } catch (err) {
     // No valid Clerk keys configured or DB unreachable — treat as unauthenticated
-    // but log for diagnostics (webhook race vs infra failure)
-    console.error("[auth] currentUser failed", err);
+    // but log for diagnostics (webhook race vs infra failure). Suppress
+    // DYNAMIC_SERVER_USAGE which is expected during `next build` static generation.
+    const msg = err instanceof Error ? err.message : String(err);
+    const digest = (err as { digest?: string })?.digest ?? "";
+    if (!msg.includes("DYNAMIC_SERVER_USAGE") && !msg.includes("Dynamic server usage") && !digest.includes("DYNAMIC")) {
+      console.error("[auth] currentUser failed", err);
+    }
     return null;
   }
 }

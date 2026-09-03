@@ -22,18 +22,44 @@ export default function proxy(
   request: Parameters<NonNullable<typeof clerkHandler>>[0],
   event: Parameters<NonNullable<typeof clerkHandler>>[1],
 ) {
-  if (!clerkHandler) return NextResponse.next();
+  const pathnameHeader = request.nextUrl.pathname + request.nextUrl.search;
+  // Propagate to Server Components via request header (headers() in RSC)
   try {
-    const result = clerkHandler(request, event);
-    // clerkMiddleware returns a promise — catch async validation failures
-    // (e.g. placeholder key like healthy-ram-4866 that passes our prefix
-    // check but fails Clerk's parsePublishableKey) and fall back to next().
+    request.headers.set("x-pathname", pathnameHeader);
+  } catch {
+    // ignore if headers immutable
+  }
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", pathnameHeader);
+
+  if (!clerkHandler) {
+    const res = NextResponse.next({ request: { headers: requestHeaders } });
+    res.headers.set("x-pathname", pathnameHeader);
+    return res;
+  }
+  try {
+    const result = clerkHandler(request, event) as NextResponse | Promise<NextResponse>;
     if (result && typeof (result as Promise<unknown>).catch === "function") {
-      return (result as Promise<NextResponse>).catch(() => NextResponse.next());
+      return (result as Promise<NextResponse>)
+        .then((r) => {
+          if (r instanceof NextResponse) r.headers.set("x-pathname", pathnameHeader);
+          return r;
+        })
+        .catch(() => {
+          const fallback = NextResponse.next({ request: { headers: requestHeaders } });
+          fallback.headers.set("x-pathname", pathnameHeader);
+          return fallback;
+        });
+    }
+    if (result instanceof NextResponse) {
+      result.headers.set("x-pathname", pathnameHeader);
     }
     return result as NextResponse;
   } catch {
-    return NextResponse.next();
+    const fallback = NextResponse.next({ request: { headers: requestHeaders } });
+    fallback.headers.set("x-pathname", pathnameHeader);
+    return fallback;
   }
 }
 

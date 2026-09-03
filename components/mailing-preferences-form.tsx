@@ -9,15 +9,13 @@ type Props = {
 };
 
 export function MailingPreferencesForm({ initialEnabled, initialFrequency }: Props) {
+  void initialFrequency; // tracked for future digest launch, not yet rendered separately
   const [enabled, setEnabled] = useState(initialEnabled);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // keep sync if server re-renders
-  // (not strictly needed but avoids stale)
   const frequency: "weekly" | "never" = enabled ? "weekly" : "never";
-  void initialFrequency;
 
   function handleSave() {
     setError(null);
