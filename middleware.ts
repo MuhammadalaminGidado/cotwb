@@ -18,7 +18,7 @@ const clerkHandler = hasValidClerkKeys()
     })
   : null;
 
-export default function proxy(
+export default function middleware(
   request: Parameters<NonNullable<typeof clerkHandler>>[0],
   event: Parameters<NonNullable<typeof clerkHandler>>[1],
 ) {
@@ -29,10 +29,14 @@ export default function proxy(
     // (e.g. placeholder key like healthy-ram-4866 that passes our prefix
     // check but fails Clerk's parsePublishableKey) and fall back to next().
     if (result && typeof (result as Promise<unknown>).catch === "function") {
-      return (result as Promise<NextResponse>).catch(() => NextResponse.next());
+      return (result as Promise<NextResponse>).catch((err) => {
+        console.warn("[middleware] clerkMiddleware failed, falling back", err);
+        return NextResponse.next();
+      });
     }
     return result as NextResponse;
-  } catch {
+  } catch (err) {
+    console.warn("[middleware] clerkMiddleware threw, falling back", err);
     return NextResponse.next();
   }
 }

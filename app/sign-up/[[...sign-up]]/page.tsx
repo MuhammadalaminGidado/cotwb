@@ -1,3 +1,5 @@
+import { SignUp } from "@clerk/nextjs";
+import { clerkAppearance } from "@/theme/clerk-appearance";
 import { hasClerk } from "@/lib/clerk-config";
 
 export default async function SignUpPage({
@@ -26,10 +28,6 @@ export default async function SignUpPage({
     );
   }
 
-  const [{ SignUp }, { clerkAppearance }] = await Promise.all([
-    import("@clerk/nextjs"),
-    import("@/theme/clerk-appearance"),
-  ]);
   return (
     <div className="flex flex-1 items-center justify-center bg-bg px-6 py-16">
       <SignUp
