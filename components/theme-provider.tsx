@@ -26,15 +26,25 @@ function setCookieTheme(theme: Theme) {
   document.cookie = `theme=${theme}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+export function ThemeProvider({
+  children,
+  initialTheme,
+}: {
+  children: React.ReactNode;
+  initialTheme?: Theme;
+}) {
+  const [theme, setTheme] = useState<Theme>(initialTheme ?? "light");
 
   useEffect(() => {
     const cookieTheme = getCookieTheme();
-    const resolved: Theme = cookieTheme ?? "light";
-    setTheme(resolved);
-    document.documentElement.setAttribute("data-theme", resolved);
-  }, []);
+    const resolved: Theme = cookieTheme ?? initialTheme ?? "light";
+    if (resolved !== theme) {
+      setTheme(resolved);
+      document.documentElement.setAttribute("data-theme", resolved);
+    } else {
+      document.documentElement.setAttribute("data-theme", resolved);
+    }
+  }, [initialTheme, theme]);
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {
