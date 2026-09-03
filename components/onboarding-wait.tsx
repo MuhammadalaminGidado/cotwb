@@ -9,30 +9,30 @@ export function OnboardingWait() {
   const router = useRouter();
   const [timedOut, setTimedOut] = useState(false);
 
-  async function poll() {
+  async function poll(signal?: AbortSignal) {
     setTimedOut(false);
     for (let i = 0; i < 24; i += 1) {
+      if (signal?.aborted) return false;
       try {
         const res = await checkOnboardingReady();
         if (res.ready) {
-          router.refresh();
+          if (!signal?.aborted) router.refresh();
           return true;
         }
       } catch {
         // ignore and retry
       }
       await new Promise<void>((r) => setTimeout(r, 500));
+      if (signal?.aborted) return false;
     }
-    setTimedOut(true);
+    if (!signal?.aborted) setTimedOut(true);
     return false;
   }
 
   useEffect(() => {
-    let cancelled = false;
-    if (!cancelled) void poll();
-    return () => {
-      cancelled = true;
-    };
+    const ctrl = new AbortController();
+    void poll(ctrl.signal);
+    return () => ctrl.abort();
   }, [router]);
 
   if (timedOut) {
@@ -63,7 +63,7 @@ export function OnboardingWait() {
     <div className="mx-auto w-full max-w-xl px-6 py-16">
       <div className="rounded-xl border border-border bg-surface p-6">
         <div className="flex items-center gap-3">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent-primary" />
+          <div className="h-5 w-5 animate-spin motion-reduce:animate-none rounded-full border-2 border-border border-t-accent-primary" />
           <p className="text-sm text-text-muted">Getting your account ready…</p>
         </div>
       </div>

@@ -18,6 +18,19 @@ export function SkeletonText({ lines = 3, className }: { lines?: number; classNa
   );
 }
 
-export function SkeletonAvatar({ size = 40, className }: { size?: number; className?: string }) {
-  return <Skeleton className={["rounded-full", className].filter(Boolean).join(" ")} style={{ width: size, height: size }} />;
+const avatarSizeMap = {
+  sm: "size-8",
+  md: "size-10",
+  lg: "size-12",
+  xl: "size-16",
+} as const;
+
+export function SkeletonAvatar({
+  size = "md",
+  className,
+}: {
+  size?: keyof typeof avatarSizeMap;
+  className?: string;
+}) {
+  return <Skeleton className={["rounded-full", avatarSizeMap[size], className].filter(Boolean).join(" ")} />;
 }

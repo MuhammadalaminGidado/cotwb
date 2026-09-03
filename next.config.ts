@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["multivariate-avis-unintruded.ngrok-free.dev", "*.ngrok-free.dev"],
+  allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean) ?? [],
 };
 
 export default nextConfig;
