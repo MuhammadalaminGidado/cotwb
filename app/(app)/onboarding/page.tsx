@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { hasClerk } from "@/lib/clerk-config";
 import { currentUser } from "@/lib/auth";
 import { OnboardingClient } from "@/components/onboarding-client";
@@ -25,7 +26,7 @@ export default async function OnboardingPage() {
   return (
     <div className="mx-auto w-full max-w-xl px-6 py-8">
       <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-primary">
-        ← Back
+        <ArrowLeftIcon className="h-4 w-4 shrink-0" aria-hidden="true" /> Back
       </Link>
       <h1 className="mt-3 font-serif text-2xl font-semibold text-text-primary">Welcome</h1>
       <p className="mt-2 text-sm text-text-muted">

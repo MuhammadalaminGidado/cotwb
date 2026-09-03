@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { AccountProfile } from "@/components/account-profile";
 import { BecomeWriterDialog } from "@/components/become-writer-dialog";
 import { MailingPreferencesForm } from "@/components/mailing-preferences-form";
@@ -17,7 +18,7 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-8">
       <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-primary">
-        ← Back
+        <ArrowLeftIcon className="h-4 w-4 shrink-0" aria-hidden="true" /> Back
       </Link>
       <h1 className="mt-3 font-serif text-2xl font-semibold text-text-primary">Settings</h1>
       <p className="mt-2 text-sm text-text-muted">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { BecomeWriterDialog } from "@/components/become-writer-dialog";
 import { NewPieceForm } from "@/components/editor/new-piece-form";
 import { canModerate, canWrite, currentUser } from "@/lib/auth";
@@ -14,7 +15,7 @@ export default async function WriteNewPage() {
     return (
       <div className="mx-auto w-full max-w-2xl px-6 py-8">
         <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-primary">
-          ← Back
+          <ArrowLeftIcon className="h-4 w-4 shrink-0" aria-hidden="true" /> Back
         </Link>
         <h1 className="mt-3 font-serif text-2xl font-semibold text-text-primary">Write</h1>
         <div className="mt-6 rounded-xl border border-warning/30 bg-warning/10 p-6">
@@ -46,7 +47,7 @@ export default async function WriteNewPage() {
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-8">
       <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-primary">
-        ← Back
+        <ArrowLeftIcon className="h-4 w-4 shrink-0" aria-hidden="true" /> Back
       </Link>
       <h1 className="mt-3 font-serif text-2xl font-semibold text-text-primary">New piece</h1>
       <p className="mt-2 text-sm text-text-muted">

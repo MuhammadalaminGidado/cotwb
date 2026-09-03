@@ -1,6 +1,7 @@
 "use client";
 
 /* eslint-disable react-hooks/set-state-in-effect */
+import { CheckIcon } from "@heroicons/react/20/solid";
 import {
   checkOnboardingReady,
   completeOnboarding,
@@ -203,7 +204,9 @@ export function OnboardingClient({
                   <span className="block text-sm font-semibold text-text-primary">Reader — always on</span>
                   <span className="mt-1 block text-xs leading-5 text-text-muted">Browse and read. You can’t turn this off.</span>
                 </span>
-                <span className="mt-0.5 hidden h-5 w-5 shrink-0 items-center justify-center rounded-full border border-accent-primary bg-accent-primary text-[10px] leading-none text-text-inverse sm:flex" aria-hidden>✓</span>
+                <span className="mt-0.5 hidden h-5 w-5 shrink-0 items-center justify-center rounded-full border border-accent-primary bg-accent-primary text-text-inverse sm:flex" aria-hidden>
+                  <CheckIcon className="h-3 w-3" aria-hidden="true" />
+                </span>
               </label>
 
               <label className={`flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3.5 text-left transition-colors duration-[var(--duration-fast)] ease-[var(--ease-out)] motion-reduce:transition-none ${wantWriter ? "border-accent-primary bg-accent-primary/10 shadow-sm" : "border-border bg-surface hover:bg-bg"}`}>
@@ -212,7 +215,9 @@ export function OnboardingClient({
                   <span className="block text-sm font-semibold text-text-primary">I want to write too</span>
                   <span className="mt-1 block text-xs leading-5 text-text-muted">Create drafts and submit for review. You can’t undo this yourself — only an admin can revoke.</span>
                 </span>
-                <span className={`mt-0.5 hidden h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] leading-none sm:flex ${wantWriter ? "border-accent-primary bg-accent-primary text-text-inverse" : "border-border bg-surface text-transparent"}`} aria-hidden>✓</span>
+                <span className={`mt-0.5 hidden h-5 w-5 shrink-0 items-center justify-center rounded-full border sm:flex ${wantWriter ? "border-accent-primary bg-accent-primary text-text-inverse" : "border-border bg-surface text-transparent"}`} aria-hidden>
+                  <CheckIcon className="h-3 w-3" aria-hidden="true" />
+                </span>
               </label>
             </div>
             {error && step === 1 ? <p className="mt-3 text-sm text-danger" role="alert">{error}</p> : null}

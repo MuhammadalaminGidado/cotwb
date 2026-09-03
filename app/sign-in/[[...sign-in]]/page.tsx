@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { SignIn } from "@clerk/nextjs";
 import { clerkAppearance } from "@/theme/clerk-appearance";
 import { hasClerk } from "@/lib/clerk-config";
@@ -37,7 +38,7 @@ export default async function SignInPage({
     <div className="flex flex-1 flex-col items-center bg-bg px-6 py-8">
       <div className="w-full max-w-md">
         <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-primary">
-          ← Back to home
+          <ArrowLeftIcon className="h-4 w-4 shrink-0" aria-hidden="true" /> Back to home
         </Link>
       </div>
       <div className="flex flex-1 items-center justify-center py-8">
