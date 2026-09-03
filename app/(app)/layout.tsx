@@ -1,10 +1,6 @@
 import { redirect } from "next/navigation";
 import { currentUser } from "@/lib/auth";
-
-function hasClerk(): boolean {
-  const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-  return (key.startsWith("pk_test_") || key.startsWith("pk_live_")) && key.length > 70;
-}
+import { hasClerk } from "@/lib/clerk-config";
 
 export default async function AppLayout({
   children,

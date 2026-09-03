@@ -4,14 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { AuthMissingBanner } from "@/components/auth-missing-banner";
 import { ThemeProvider } from "@/components/theme-provider";
-
-function hasValidClerkPublishableKey(): boolean {
-  const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-  return (
-    (key.startsWith("pk_test_") || key.startsWith("pk_live_")) &&
-    key.length > 70
-  );
-}
+import { hasClerk } from "@/lib/clerk-config";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -31,7 +24,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const clerkReady = hasValidClerkPublishableKey();
+  const clerkReady = hasClerk();
 
   const inner = (
     <html

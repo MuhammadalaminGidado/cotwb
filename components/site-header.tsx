@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { currentUser } from "@/lib/auth";
-
-function hasClerk(): boolean {
-  const key = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-  return (key.startsWith("pk_test_") || key.startsWith("pk_live_")) && key.length > 70;
-}
+import { hasClerk } from "@/lib/clerk-config";
 
 export async function SiteHeader() {
   const user = await currentUser();

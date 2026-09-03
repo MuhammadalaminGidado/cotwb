@@ -1,21 +1,27 @@
 import { NextResponse } from "next/server";
 import { clerkMiddleware } from "@clerk/nextjs/server";
+import { hasValidClerkKeys } from "@/lib/clerk-config";
 
-function hasValidClerkKeys(): boolean {
-  const pub = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-  const secret = process.env.CLERK_SECRET_KEY ?? "";
-  // Real Clerk publishable keys are pk_test_/pk_live_ + ~60+ base64 chars (>80 total)
-  // Placeholder/test keys in this repo are shorter and will be treated as "not configured"
-  return (
-    (pub.startsWith("pk_test_") || pub.startsWith("pk_live_")) &&
-    pub.length > 70 &&
-    secret.length > 20
-  );
+const clerkHandler = hasValidClerkKeys() ? clerkMiddleware() : null;
+
+export default function proxy(
+  request: Parameters<NonNullable<typeof clerkHandler>>[0],
+  event: Parameters<NonNullable<typeof clerkHandler>>[1],
+) {
+  if (!clerkHandler) return NextResponse.next();
+  try {
+    const result = clerkHandler(request, event);
+    // clerkMiddleware returns a promise — catch async validation failures
+    // (e.g. placeholder key like healthy-ram-4866 that passes our prefix
+    // check but fails Clerk's parsePublishableKey) and fall back to next().
+    if (result && typeof (result as Promise<unknown>).catch === "function") {
+      return (result as Promise<NextResponse>).catch(() => NextResponse.next());
+    }
+    return result as NextResponse;
+  } catch {
+    return NextResponse.next();
+  }
 }
-
-export default hasValidClerkKeys()
-  ? clerkMiddleware()
-  : () => NextResponse.next();
 
 export const config = {
   matcher: [
