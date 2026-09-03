@@ -31,3 +31,15 @@ body {
   color: var(--color-text-primary);
   font-family: var(--font-sans);
 }
+
+button:not(:disabled),
+a,
+label,
+[role="button"],
+select {
+  cursor: pointer;
+}
+button:disabled,
+a[aria-disabled="true"] {
+  cursor: not-allowed;
+}

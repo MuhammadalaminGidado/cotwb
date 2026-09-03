@@ -61,7 +61,7 @@ export function MailingPreferencesForm({ initialEnabled, initialFrequency }: Pro
         type="button"
         onClick={handleSave}
         disabled={isPending}
-        className="mt-4 rounded-full bg-accent-primary px-5 py-2 text-sm font-medium text-text-inverse transition-colors hover:bg-accent-primary-light disabled:opacity-50"
+        className="mt-4 cursor-pointer rounded-full bg-accent-primary px-5 py-2 text-sm font-medium text-text-inverse shadow-sm transition-all hover:bg-accent-primary-light active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none"
       >
         {isPending ? "Saving…" : "Save preferences"}
       </button>
