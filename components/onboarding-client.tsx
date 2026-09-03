@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { becomeWriter } from "@/lib/actions/writer";
 import { checkOnboardingReady } from "@/lib/actions/onboarding";
 
 type Props = {
-  initialIsWriter: boolean | null; // null = user row not yet ready
+  initialIsWriter: boolean | null; // null = account still syncing
 };
 
 export function OnboardingClient({ initialIsWriter }: Props) {
@@ -15,54 +15,66 @@ export function OnboardingClient({ initialIsWriter }: Props) {
   const redirectUrl = searchParams.get("redirect_url") ?? "/";
 
   const [isWriter, setIsWriter] = useState(initialIsWriter);
-  const [checking, setChecking] = useState(false);
+  const [readyError, setReadyError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  // webhook race: user row not ready yet — poll
+  // Silently wait for account to be ready — no webhook jargon, just a spinner.
+  useEffect(() => {
+    if (isWriter !== null) return;
+    let cancelled = false;
+
+    async function poll() {
+      for (let i = 0; i < 8; i += 1) {
+        if (cancelled) return;
+        try {
+          const res = await checkOnboardingReady();
+          if (res.ready) {
+            if (!cancelled) router.refresh();
+            return;
+          }
+        } catch {
+          // ignore and retry
+        }
+        await new Promise<void>((r) => setTimeout(r, 400));
+      }
+      if (!cancelled) setReadyError(true);
+    }
+
+    poll();
+    return () => {
+      cancelled = true;
+    };
+  }, [isWriter, router]);
+
   if (isWriter === null) {
+    if (readyError) {
+      return (
+        <div className="rounded-xl border border-border bg-surface p-6 text-center">
+          <p className="text-sm text-text-muted">
+            Taking a little longer than usual. Please refresh the page.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.refresh()}
+            className="mt-4 rounded-full bg-accent-primary px-5 py-2 text-sm font-medium text-text-inverse"
+          >
+            Refresh
+          </button>
+        </div>
+      );
+    }
     return (
       <div className="rounded-xl border border-border bg-surface p-6">
-        <p className="text-sm font-medium text-text-primary">
-          Setting up your account…
-        </p>
-        <p className="mt-1 text-sm text-text-muted">
-          This usually takes a second.
-        </p>
-        <button
-          type="button"
-          disabled={checking}
-          onClick={async () => {
-            setChecking(true);
-            setError(null);
-            try {
-              const res = await checkOnboardingReady();
-              if (res.ready) {
-                router.refresh();
-              } else {
-                setError("Still setting up — try again in a moment.");
-              }
-            } catch {
-              setError("Could not check status. Try again.");
-            } finally {
-              setChecking(false);
-            }
-          }}
-          className="mt-4 rounded-full bg-accent-primary px-5 py-2 text-sm font-medium text-text-inverse disabled:opacity-50"
-        >
-          {checking ? "Checking…" : "Continue"}
-        </button>
-        {error ? (
-          <p className="mt-2 text-sm text-danger" role="alert">
-            {error}
-          </p>
-        ) : null}
+        <div className="flex items-center gap-3">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent-primary" />
+          <p className="text-sm text-text-muted">Getting your account ready…</p>
+        </div>
       </div>
     );
   }
 
   if (isWriter) {
-    // Already a writer (e.g. re-visiting onboarding)
     return (
       <div className="rounded-xl border border-success/30 bg-success/10 p-6">
         <p className="text-sm font-medium text-text-primary">

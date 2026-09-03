@@ -6,17 +6,14 @@ import { checkOnboardingReady } from "@/lib/actions/onboarding";
 
 export function OnboardingWait() {
   const router = useRouter();
-  const [attempt, setAttempt] = useState(0);
   const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
 
     async function poll() {
-      // poll up to ~3s (8 attempts x 400ms)
       for (let i = 0; i < 8; i += 1) {
         if (cancelled) return;
-        setAttempt(i + 1);
         try {
           const res = await checkOnboardingReady();
           if (res.ready) {
@@ -40,26 +37,17 @@ export function OnboardingWait() {
   if (timedOut) {
     return (
       <div className="mx-auto w-full max-w-xl px-6 py-16">
-        <div className="rounded-xl border border-warning/30 bg-warning/10 p-6">
-          <h1 className="text-lg font-semibold text-text-primary">
-            Still setting up your account
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-text-muted">
-            Your account is taking longer than expected to set up. This can
-            happen if the webhook is delayed.
+        <div className="rounded-xl border border-border bg-surface p-6 text-center">
+          <p className="text-sm text-text-muted">
+            Taking a little longer than usual. Please refresh the page.
           </p>
           <button
             type="button"
-            onClick={() => {
-              setTimedOut(false);
-              setAttempt(0);
-              router.refresh();
-            }}
-            className="mt-4 rounded-full bg-accent-primary px-5 py-2 text-sm font-medium text-text-inverse transition-colors hover:bg-accent-primary-light"
+            onClick={() => router.refresh()}
+            className="mt-4 rounded-full bg-accent-primary px-5 py-2 text-sm font-medium text-text-inverse"
           >
-            Continue
+            Refresh
           </button>
-          <p className="mt-3 text-xs text-text-muted">Attempt {attempt}/8</p>
         </div>
       </div>
     );
@@ -68,16 +56,10 @@ export function OnboardingWait() {
   return (
     <div className="mx-auto w-full max-w-xl px-6 py-16">
       <div className="rounded-xl border border-border bg-surface p-6">
-        <p className="text-sm font-medium text-text-primary">
-          Setting up your account…
-        </p>
-        <p className="mt-1 text-sm text-text-muted">
-          This usually takes a second. Hang tight.
-        </p>
-        <div className="mt-4 h-1 overflow-hidden rounded-full bg-border">
-          <div className="h-full w-1/2 animate-pulse bg-accent-primary" />
+        <div className="flex items-center gap-3">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-accent-primary" />
+          <p className="text-sm text-text-muted">Getting your account ready…</p>
         </div>
-        <p className="mt-2 text-xs text-text-muted">Attempt {attempt}/8</p>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { AccountProfile } from "@/components/account-profile";
 import { BecomeWriterDialog } from "@/components/become-writer-dialog";
 import { canModerate, currentUser } from "@/lib/auth";
 
@@ -21,6 +22,13 @@ export default async function SettingsPage() {
       </p>
 
       <div className="mt-8 space-y-6">
+        <div className="rounded-xl border border-border bg-surface p-6">
+          <h2 className="text-sm font-semibold text-text-primary">Account</h2>
+          <div className="mt-4">
+            <AccountProfile />
+          </div>
+        </div>
+
         <div className="rounded-xl border border-border bg-surface p-6">
           <h2 className="text-sm font-semibold text-text-primary">Profile</h2>
           <dl className="mt-4 grid gap-3 text-sm">

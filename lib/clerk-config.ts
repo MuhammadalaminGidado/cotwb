@@ -1,9 +1,15 @@
-const PLACEHOLDER_PATTERNS = [
-  "aGVhbHRoeS1yYW0tNDg2Ni", // healthy-ram-4866 — seeded placeholder in .env.local
-];
+const KEY_PREFIXES = ["pk_test", "pk_live", "sk_test", "sk_live", "whsec"];
+const PLACEHOLDER_SUFFIX =
+  /^(x+|your[_-]?key|your[_-]?secret|changeme|placeholder|example|replace[_-]?me)$/i;
 
 function isPlaceholderKey(key: string): boolean {
-  return PLACEHOLDER_PATTERNS.some((p) => key.includes(p));
+  for (const prefix of KEY_PREFIXES) {
+    if (key.startsWith(`${prefix}_`)) {
+      const rest = key.slice(prefix.length + 1);
+      return PLACEHOLDER_SUFFIX.test(rest);
+    }
+  }
+  return false;
 }
 
 export function hasClerk(): boolean {

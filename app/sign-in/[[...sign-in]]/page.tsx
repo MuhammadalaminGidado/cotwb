@@ -1,6 +1,13 @@
 import { hasClerk } from "@/lib/clerk-config";
 
-export default async function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ redirect_url?: string }>;
+}) {
+  const params = await searchParams;
+  const redirectUrl = params?.redirect_url ?? "/onboarding";
+
   if (!hasClerk()) {
     return (
       <div className="mx-auto w-full max-w-xl px-6 py-16">
@@ -29,7 +36,11 @@ export default async function SignInPage() {
   ]);
   return (
     <div className="flex flex-1 items-center justify-center bg-bg px-6 py-16">
-      <SignIn appearance={clerkAppearance} />
+      <SignIn
+        appearance={clerkAppearance}
+        forceRedirectUrl={redirectUrl}
+        fallbackRedirectUrl={redirectUrl}
+      />
     </div>
   );
 }
