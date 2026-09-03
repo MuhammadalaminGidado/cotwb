@@ -1,5 +1,6 @@
 import { AccountProfile } from "@/components/account-profile";
 import { BecomeWriterDialog } from "@/components/become-writer-dialog";
+import { MailingPreferencesForm } from "@/components/mailing-preferences-form";
 import { canModerate, currentUser } from "@/lib/auth";
 
 export default async function SettingsPage() {
@@ -50,6 +51,10 @@ export default async function SettingsPage() {
         </div>
 
         <BecomeWriterDialog isWriter={isWriter} isAdmin={isAdmin} />
+        <MailingPreferencesForm
+          initialEnabled={user.digestEnabled}
+          initialFrequency={user.digestFrequency}
+        />
       </div>
     </div>
   );

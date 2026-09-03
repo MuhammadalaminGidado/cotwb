@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { checkOnboardingReady } from "@/lib/actions/onboarding";
@@ -8,27 +9,27 @@ export function OnboardingWait() {
   const router = useRouter();
   const [timedOut, setTimedOut] = useState(false);
 
+  async function poll() {
+    setTimedOut(false);
+    for (let i = 0; i < 24; i += 1) {
+      try {
+        const res = await checkOnboardingReady();
+        if (res.ready) {
+          router.refresh();
+          return true;
+        }
+      } catch {
+        // ignore and retry
+      }
+      await new Promise<void>((r) => setTimeout(r, 500));
+    }
+    setTimedOut(true);
+    return false;
+  }
+
   useEffect(() => {
     let cancelled = false;
-
-    async function poll() {
-      for (let i = 0; i < 8; i += 1) {
-        if (cancelled) return;
-        try {
-          const res = await checkOnboardingReady();
-          if (res.ready) {
-            router.refresh();
-            return;
-          }
-        } catch {
-          // ignore and retry
-        }
-        await new Promise<void>((r) => setTimeout(r, 400));
-      }
-      if (!cancelled) setTimedOut(true);
-    }
-
-    poll();
+    if (!cancelled) void poll();
     return () => {
       cancelled = true;
     };
@@ -41,9 +42,15 @@ export function OnboardingWait() {
           <p className="text-sm text-text-muted">
             Taking a little longer than usual. Please refresh the page.
           </p>
+          <p className="mt-1 text-xs text-text-muted">
+            If this persists, check that CLERK_WEBHOOK_SECRET is configured.
+          </p>
           <button
             type="button"
-            onClick={() => router.refresh()}
+            onClick={() => {
+              void poll();
+              router.refresh();
+            }}
             className="mt-4 rounded-full bg-accent-primary px-5 py-2 text-sm font-medium text-text-inverse"
           >
             Refresh

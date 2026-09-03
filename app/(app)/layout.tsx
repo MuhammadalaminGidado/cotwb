@@ -32,10 +32,9 @@ export default async function AppLayout({
   const user = await currentUser();
   if (!user) {
     // Clerk session exists but local users row hasn't been created yet
-    // (webhook race after signup). Show a lightweight polling state instead
-    // of redirecting to sign-in. See auth-flow.md edge case.
-    const { OnboardingWait } = await import("@/components/onboarding-wait");
-    return <OnboardingWait />;
+    // (webhook race after signup). Redirect to onboarding which handles
+    // the polling state centrally (T1 Option A).
+    redirect("/onboarding");
   }
   return <>{children}</>;
 }

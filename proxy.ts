@@ -1,8 +1,22 @@
 import { NextResponse } from "next/server";
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { hasValidClerkKeys } from "@/lib/clerk-config";
 
-const clerkHandler = hasValidClerkKeys() ? clerkMiddleware() : null;
+const isProtectedRoute = createRouteMatcher([
+  "/onboarding(.*)",
+  "/write(.*)",
+  "/settings(.*)",
+  "/review-queue(.*)",
+  "/moderation(.*)",
+]);
+
+const clerkHandler = hasValidClerkKeys()
+  ? clerkMiddleware(async (auth, req) => {
+      if (isProtectedRoute(req)) {
+        await auth.protect();
+      }
+    })
+  : null;
 
 export default function proxy(
   request: Parameters<NonNullable<typeof clerkHandler>>[0],

@@ -20,8 +20,10 @@ export async function currentUser(): Promise<LocalUser | null> {
     });
 
     return user ?? null;
-  } catch {
-    // No valid Clerk keys configured — treat as unauthenticated
+  } catch (err) {
+    // No valid Clerk keys configured or DB unreachable — treat as unauthenticated
+    // but log for diagnostics (webhook race vs infra failure)
+    console.error("[auth] currentUser failed", err);
     return null;
   }
 }

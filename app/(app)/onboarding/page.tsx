@@ -27,10 +27,15 @@ export default async function OnboardingPage() {
         Welcome
       </h1>
       <p className="mt-2 text-sm text-text-muted">
-        One quick choice to get you started.
+        Choose how you want to use COTWB and set your mailing preference. You
+        can change both later in settings.
       </p>
       <div className="mt-6">
-        <OnboardingClient initialIsWriter={user ? user.isWriter : null} />
+        <OnboardingClient
+          initialIsWriter={user ? user.isWriter : null}
+          initialDigestEnabled={user ? user.digestEnabled : true}
+          initialDigestFrequency={user ? user.digestFrequency : "weekly"}
+        />
       </div>
     </div>
   );
