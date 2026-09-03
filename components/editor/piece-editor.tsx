@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { updatePiece } from "@/lib/actions/pieces";
@@ -24,6 +25,7 @@ export function PieceEditor({
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
+  const router = useRouter();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedRef = useRef({ title: initialTitle, body: initialBody, visibility: initialVisibility });
 
@@ -70,12 +72,20 @@ export function PieceEditor({
           setSaveState("saved");
           setTimeout(() => setSaveState("idle"), 1500);
         } else {
+          // Session expiry mid-edit: autosave fails due to expired Clerk token.
+          // Redirect to sign-in with redirect_url back to this draft so no
+          // work is lost (autosave already persisted prior keystrokes).
+          if (result.error.toLowerCase().includes("signed in")) {
+            const redirect = encodeURIComponent(window.location.pathname);
+            router.push(`/sign-in?redirect_url=${redirect}`);
+            return;
+          }
           setSaveState("error");
           setError(result.error);
         }
       });
     },
-    [pieceId],
+    [pieceId, router],
   );
 
   const scheduleSave = useCallback(

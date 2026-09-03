@@ -96,7 +96,10 @@ export async function updatePiece(
   }
 
   const user = await currentUser();
-  if (!user || !canWrite(user)) {
+  if (!user) {
+    return { success: false, error: "You must be signed in to edit pieces." };
+  }
+  if (!canWrite(user)) {
     return { success: false, error: "You must be a writer to edit pieces." };
   }
 

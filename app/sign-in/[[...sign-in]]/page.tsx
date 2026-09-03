@@ -23,10 +23,13 @@ export default async function SignInPage() {
     );
   }
 
-  const { SignIn } = await import("@clerk/nextjs");
+  const [{ SignIn }, { clerkAppearance }] = await Promise.all([
+    import("@clerk/nextjs"),
+    import("@/theme/clerk-appearance"),
+  ]);
   return (
     <div className="flex flex-1 items-center justify-center bg-bg px-6 py-16">
-      <SignIn />
+      <SignIn appearance={clerkAppearance} />
     </div>
   );
 }

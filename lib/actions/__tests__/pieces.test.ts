@@ -244,7 +244,7 @@ describe("updatePiece", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "You must be a writer to edit pieces.",
+      error: "You must be signed in to edit pieces.",
     });
   });
 
