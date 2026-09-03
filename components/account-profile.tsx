@@ -1,6 +1,7 @@
 "use client";
 
 import { useUser, SignOutButton } from "@clerk/nextjs";
+import { Avatar } from "@/components/ui/avatar";
 
 export function AccountProfile() {
   const { user, isLoaded } = useUser();
@@ -16,21 +17,16 @@ export function AccountProfile() {
 
   if (!user) return null;
 
+  const displayName = user.fullName ?? user.username ?? user.primaryEmailAddress?.emailAddress ?? null;
+  // Google profile picture: Clerk's imageUrl is Google avatar when linked via OAuth
+  const avatarSrc = user.imageUrl || null;
+
   return (
     <div className="flex items-center justify-between gap-4">
       <div className="flex items-center gap-3">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={user.imageUrl}
-          alt={user.fullName ?? user.username ?? "Avatar"}
-          width={40}
-          height={40}
-          className="h-10 w-10 rounded-full border border-border object-cover"
-        />
+        <Avatar src={avatarSrc} name={displayName} alt={displayName ?? "Avatar"} size={40} />
         <div>
-          <p className="text-sm font-medium text-text-primary">
-            {user.fullName ?? user.username ?? user.primaryEmailAddress?.emailAddress}
-          </p>
+          <p className="text-sm font-medium text-text-primary">{displayName}</p>
           <p className="text-xs text-text-muted">
             {user.primaryEmailAddress?.emailAddress}
             {user.username ? ` · @${user.username}` : ""}

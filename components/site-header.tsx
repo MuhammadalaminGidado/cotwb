@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ClerkUserMenu } from "@/components/user-menu";
+import { Avatar } from "@/components/ui/avatar";
 import { currentUser } from "@/lib/auth";
 import { hasClerk } from "@/lib/clerk-config";
 
@@ -55,9 +56,8 @@ export async function SiteHeader() {
           <ThemeToggle />
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="hidden text-sm text-text-muted sm:inline">
-                {user.username}
-              </span>
+              <Avatar src={user.image} name={user.displayName || user.username} alt={user.displayName || user.username} size={32} />
+              <span className="hidden text-sm text-text-muted sm:inline">{user.username}</span>
               {clerkReady ? <ClerkUserMenu /> : null}
             </div>
           ) : clerkReady ? (

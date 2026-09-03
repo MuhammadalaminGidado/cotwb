@@ -22,7 +22,7 @@ export function ThemeToggle() {
         <span className="relative block h-4 w-4">
           <SunIcon
             aria-hidden="true"
-            className={`absolute inset-0 h-4 w-4 text-accent-secondary transition-[transform,opacity] duration-[var(--duration-fast)] ease-[var(--ease-out)] motion-reduce:transition-none ${isDark ? "scale-0 rotate-90 opacity-0" : "scale-100 rotate-0 opacity-100"}`}
+            className={`absolute inset-0 h-4 w-4 text-accent-primary transition-[transform,opacity] duration-[var(--duration-fast)] ease-[var(--ease-out)] motion-reduce:transition-none ${isDark ? "scale-0 rotate-90 opacity-0" : "scale-100 rotate-0 opacity-100"}`}
           />
           <MoonIcon
             aria-hidden="true"
