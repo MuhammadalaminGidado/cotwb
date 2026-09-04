@@ -46,3 +46,17 @@ button:disabled,
 a[aria-disabled="true"] {
   cursor: not-allowed;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-transition,
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after {
+    transition:
+      background-color var(--duration-medium) var(--ease-out),
+      color var(--duration-medium) var(--ease-out),
+      border-color var(--duration-medium) var(--ease-out),
+      fill var(--duration-medium) var(--ease-out),
+      stroke var(--duration-medium) var(--ease-out) !important;
+  }
+}

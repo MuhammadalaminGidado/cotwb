@@ -49,7 +49,13 @@ export function ThemeProvider({
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {
       const next: Theme = prev === "light" ? "dark" : "light";
-      document.documentElement.setAttribute("data-theme", next);
+      const root = document.documentElement;
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!reduceMotion) {
+        root.classList.add("theme-transition");
+        window.setTimeout(() => root.classList.remove("theme-transition"), 300);
+      }
+      root.setAttribute("data-theme", next);
       setCookieTheme(next);
       return next;
     });
