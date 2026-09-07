@@ -127,7 +127,7 @@ export function OnboardingClient({
           <p className="mt-2 text-xs text-text-muted">{digestEnabled ? "You’ll receive weekly (when enabled)." : "You’ll receive nothing (never)."}</p>
           {error ? <p className="mt-3 text-sm text-danger" role="alert">{error}</p> : null}
           <div className="mt-4 flex gap-3">
-            <button type="button" onClick={handleSaveMailing} disabled={isPending} className="cursor-pointer rounded-full bg-accent-primary px-5 py-2 text-sm font-medium text-text-inverse shadow-sm transition-all hover:bg-accent-primary-light active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none">
+            <button type="button" onClick={handleSaveMailing} disabled={isPending} className="cursor-pointer rounded-full bg-accent-primary px-5 py-2 text-sm font-medium text-text-inverse shadow-sm transition-[background-color,box-shadow,transform] hover:bg-accent-primary-light active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none">
               {isPending ? "Saving…" : "Continue"}
             </button>
             <button type="button" onClick={() => router.push(redirectUrl)} disabled={isPending} className="cursor-pointer rounded-full border border-border bg-surface px-5 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-bg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none">
@@ -153,19 +153,6 @@ export function OnboardingClient({
   }
 
   function handleComplete() {
-    setError(null);
-    startTransition(async () => {
-      const res = await completeOnboarding({
-        isWriter: wantWriter,
-        digestEnabled,
-        digestFrequency: digestEnabled ? "weekly" : "never",
-      });
-      if (res.success) router.push(redirectUrl);
-      else setError(res.error);
-    });
-  }
-
-  function handleSkipPhase2() {
     setError(null);
     startTransition(async () => {
       const res = await completeOnboarding({
@@ -228,7 +215,7 @@ export function OnboardingClient({
                   setDirection(1);
                   setStep(2);
                 }}
-                className="flex-1 cursor-pointer rounded-full bg-accent-primary px-5 py-2.5 text-sm font-medium text-text-inverse shadow-sm transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-accent-primary-light active:scale-[0.97] motion-reduce:transition-none"
+                className="flex-1 cursor-pointer rounded-full bg-accent-primary px-5 py-2.5 text-sm font-medium text-text-inverse shadow-sm transition-[background-color,box-shadow,transform] duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-accent-primary-light active:scale-[0.97] motion-reduce:transition-none"
               >
                 Next
               </button>
@@ -263,12 +250,10 @@ export function OnboardingClient({
               >
                 Back
               </button>
-              <button type="button" onClick={handleComplete} disabled={isPending} className="flex-1 cursor-pointer rounded-full bg-accent-primary px-5 py-2.5 text-sm font-medium text-text-inverse shadow-sm transition-all duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-accent-primary-light active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
+              <button type="button" onClick={handleComplete} disabled={isPending} className="flex-1 cursor-pointer rounded-full bg-accent-primary px-5 py-2.5 text-sm font-medium text-text-inverse shadow-sm transition-[background-color,box-shadow,transform] duration-[var(--duration-fast)] ease-[var(--ease-out)] hover:bg-accent-primary-light active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none motion-reduce:active:scale-100">
                 {isPending ? "Saving…" : "Continue"}
               </button>
-              <button type="button" onClick={handleSkipPhase2} disabled={isPending} className="cursor-pointer rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-bg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none">
-                Skip
-              </button>
+              <button type="button" onClick={handleComplete} disabled={isPending} className="cursor-pointer rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-bg active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 motion-reduce:transition-none">Skip</button>
             </div>
           </div>
         </div>

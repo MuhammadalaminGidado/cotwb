@@ -3,6 +3,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { SignIn } from "@clerk/nextjs";
 import { clerkAppearance } from "@/theme/clerk-appearance";
 import { hasClerk } from "@/lib/clerk-config";
+import { getSafeRedirect } from "@/lib/redirect";
 
 export default async function SignInPage({
   searchParams,
@@ -10,7 +11,7 @@ export default async function SignInPage({
   searchParams?: Promise<{ redirect_url?: string }>;
 }) {
   const params = await searchParams;
-  const redirectUrl = params?.redirect_url ?? "/onboarding";
+  const redirectUrl = getSafeRedirect(params?.redirect_url, "/onboarding");
 
   if (!hasClerk()) {
     return (
