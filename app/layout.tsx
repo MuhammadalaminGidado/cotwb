@@ -23,17 +23,23 @@ export const metadata: Metadata = {
   description: "Chip of the Writer's Block (COTWB) — a community for writers and readers.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import { cookies } from "next/headers";
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const clerkReady = hasClerk();
+  const cookieStore = await cookies();
+  const initialTheme = cookieStore.get("theme")?.value === "dark" ? "dark" : "light";
 
   const inner = (
     <html
       lang="en"
+      data-theme={initialTheme}
+      suppressHydrationWarning
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-bg text-text-primary">
         {!clerkReady ? <AuthMissingBanner /> : null}
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider initialTheme={initialTheme as "light" | "dark"}>{children}</ThemeProvider>
       </body>
     </html>
   );

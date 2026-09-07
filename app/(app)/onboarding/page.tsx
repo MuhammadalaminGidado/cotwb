@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { hasClerk } from "@/lib/clerk-config";
 import { currentUser } from "@/lib/auth";
 import { OnboardingClient } from "@/components/onboarding-client";
@@ -23,14 +25,20 @@ export default async function OnboardingPage() {
 
   return (
     <div className="mx-auto w-full max-w-xl px-6 py-8">
-      <h1 className="font-serif text-2xl font-semibold text-text-primary">
-        Welcome
-      </h1>
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-primary">
+        <ArrowLeftIcon className="h-4 w-4 shrink-0" aria-hidden="true" /> Back
+      </Link>
+      <h1 className="mt-3 font-serif text-2xl font-semibold text-text-primary">Welcome</h1>
       <p className="mt-2 text-sm text-text-muted">
-        One quick choice to get you started.
+        Choose how you want to use COTWB and set your mailing preference. You
+        can change both later in settings.
       </p>
       <div className="mt-6">
-        <OnboardingClient initialIsWriter={user ? user.isWriter : null} />
+        <OnboardingClient
+          initialIsWriter={user ? user.isWriter : null}
+          initialDigestEnabled={user ? user.digestEnabled : true}
+          initialDigestFrequency={user ? user.digestFrequency : "weekly"}
+        />
       </div>
     </div>
   );

@@ -31,6 +31,8 @@ export async function becomeWriter(): Promise<
 
   revalidatePath("/settings");
   revalidatePath("/write");
+  revalidatePath("/onboarding");
+  revalidatePath("/");
 
   return { success: true };
 }

@@ -13,12 +13,18 @@
   --color-bg: var(--color-bg);
   --color-surface: var(--color-surface);
   --color-border: var(--color-border);
+  --color-skeleton: var(--color-skeleton);
   --color-text-primary: var(--color-text-primary);
   --color-text-muted: var(--color-text-muted);
   --color-text-inverse: var(--color-text-inverse);
   --color-success: var(--color-success);
   --color-danger: var(--color-danger);
   --color-warning: var(--color-warning);
+  --ease-out: var(--ease-out);
+  --ease-in: var(--ease-in);
+  --ease-spring: var(--ease-spring);
+  --duration-fast: var(--duration-fast);
+  --duration-medium: var(--duration-medium);
   --font-sans: var(--font-inter);
   --font-serif: var(--font-playfair);
 }
@@ -27,4 +33,30 @@ body {
   background: var(--color-bg);
   color: var(--color-text-primary);
   font-family: var(--font-sans);
+}
+
+button:not(:disabled),
+a,
+label,
+[role="button"],
+select {
+  cursor: pointer;
+}
+button:disabled,
+a[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-transition,
+  html.theme-transition *,
+  html.theme-transition *::before,
+  html.theme-transition *::after {
+    transition:
+      background-color var(--duration-medium) var(--ease-out),
+      color var(--duration-medium) var(--ease-out),
+      border-color var(--duration-medium) var(--ease-out),
+      fill var(--duration-medium) var(--ease-out),
+      stroke var(--duration-medium) var(--ease-out) !important;
+  }
 }

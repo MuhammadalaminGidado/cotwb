@@ -55,9 +55,7 @@ export async function SiteHeader() {
           <ThemeToggle />
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="hidden text-sm text-text-muted sm:inline">
-                {user.username}
-              </span>
+              <span className="hidden text-sm text-text-muted sm:inline">{user.username}</span>
               {clerkReady ? <ClerkUserMenu /> : null}
             </div>
           ) : clerkReady ? (

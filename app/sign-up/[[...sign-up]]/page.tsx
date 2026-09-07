@@ -1,4 +1,9 @@
+import Link from "next/link";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { SignUp } from "@clerk/nextjs";
+import { clerkAppearance } from "@/theme/clerk-appearance";
 import { hasClerk } from "@/lib/clerk-config";
+import { getSafeRedirect } from "@/lib/redirect";
 
 export default async function SignUpPage({
   searchParams,
@@ -6,7 +11,7 @@ export default async function SignUpPage({
   searchParams?: Promise<{ redirect_url?: string }>;
 }) {
   const params = await searchParams;
-  const redirectUrl = params?.redirect_url ?? "/onboarding";
+  const redirectUrl = getSafeRedirect(params?.redirect_url, "/onboarding");
 
   if (!hasClerk()) {
     return (
@@ -26,17 +31,20 @@ export default async function SignUpPage({
     );
   }
 
-  const [{ SignUp }, { clerkAppearance }] = await Promise.all([
-    import("@clerk/nextjs"),
-    import("@/theme/clerk-appearance"),
-  ]);
   return (
-    <div className="flex flex-1 items-center justify-center bg-bg px-6 py-16">
-      <SignUp
-        appearance={clerkAppearance}
-        forceRedirectUrl={redirectUrl}
-        fallbackRedirectUrl={redirectUrl}
-      />
+    <div className="flex flex-1 flex-col items-center bg-bg px-6 py-8">
+      <div className="w-full max-w-md">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-primary">
+          <ArrowLeftIcon className="h-4 w-4 shrink-0" aria-hidden="true" /> Back to home
+        </Link>
+      </div>
+      <div className="flex flex-1 items-center justify-center py-8">
+        <SignUp
+          appearance={clerkAppearance}
+          forceRedirectUrl={redirectUrl}
+          fallbackRedirectUrl={redirectUrl}
+        />
+      </div>
     </div>
   );
 }

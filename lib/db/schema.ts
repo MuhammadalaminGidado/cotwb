@@ -36,6 +36,8 @@ export const reactionTypeEnum = pgEnum("reaction_type", [
 
 export const userRoleEnum = pgEnum("user_role", ["user", "admin"]);
 
+export const digestFrequencyEnum = pgEnum("digest_frequency", ["weekly", "never"]);
+
 // ─── Users (Clerk-synced local row) ─────────────────────────────────
 
 export const users = pgTable("users", {
@@ -47,6 +49,9 @@ export const users = pgTable("users", {
   displayName: varchar("display_name", { length: 128 }),
   bio: text("bio"),
   image: text("image"),
+  digestEnabled: boolean("digest_enabled").notNull().default(true),
+  digestFrequency: digestFrequencyEnum("digest_frequency").notNull().default("weekly"),
+  onboardingCompletedAt: timestamp("onboarding_completed_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
     .notNull()
@@ -170,6 +175,7 @@ export const comments = pgTable("comments", {
   authorId: uuid("author_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   parentId: uuid("parent_id").references((): any => comments.id, {
     onDelete: "cascade",
   }),
