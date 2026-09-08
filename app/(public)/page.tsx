@@ -1,25 +1,10 @@
 import Link from "next/link";
 import { ArrowLeftIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { SiteHeader } from "@/components/site-header";
+import { PieceCard } from "@/components/piece-card";
 import { getPublishedPieces } from "@/lib/db/queries/pieces";
 
 const PAGE_SIZE = 10;
-
-function excerpt(html: string, max = 180): string {
-  const text = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&[a-z]+;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (text.length <= max) return text;
-  return `${text.slice(0, max).trimEnd()}…`;
-}
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
 
 export default async function FeedPage({
   searchParams,
@@ -59,33 +44,7 @@ export default async function FeedPage({
         ) : (
           <ul className="mt-8 space-y-4">
             {pieces.map((piece) => (
-              <li
-                key={piece.id}
-                className="rounded-xl border border-border bg-surface p-6"
-              >
-                <Link href={`/pieces/${piece.slug}`} className="group block">
-                  <h2 className="font-serif text-lg font-semibold text-text-primary transition-colors group-hover:text-accent-primary">
-                    {piece.title}
-                  </h2>
-                  <p className="mt-1.5 text-sm leading-6 text-text-muted">
-                    {excerpt(piece.body)}
-                  </p>
-                </Link>
-                <div className="mt-3 flex items-center gap-2 text-xs text-text-muted">
-                  <Link
-                    href={`/authors/${piece.author.username}`}
-                    className="font-medium transition-colors hover:text-text-primary"
-                  >
-                    {piece.author.displayName ?? piece.author.username}
-                  </Link>
-                  <span aria-hidden>·</span>
-                  <time dateTime={piece.publishedAt?.toISOString()}>
-                    {piece.publishedAt
-                      ? dateFormatter.format(piece.publishedAt)
-                      : dateFormatter.format(piece.createdAt)}
-                  </time>
-                </div>
-              </li>
+              <PieceCard key={piece.id} piece={piece} />
             ))}
           </ul>
         )}
