@@ -1,6 +1,6 @@
-import { and, desc, eq, or } from "drizzle-orm";
+import { and, count, desc, eq, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { memberships, pieces, users } from "@/lib/db/schema";
+import { memberships, pieceTags, pieces, tags, users } from "@/lib/db/schema";
 import type { LocalUser } from "@/lib/auth";
 
 /**
@@ -97,13 +97,36 @@ export async function getPieceBySlug(
  * Feed: only approved + public pieces, ordered by publishedAt desc.
  * This is the public discovery feed (Phase 5). No viewer required — anyone can see it.
  * Group/private pieces never appear here.
+ * Pass `tagSlug` to narrow to pieces carrying that tag (5.4 filter UI).
  */
 export async function getPublishedPieces(opts?: {
   limit?: number;
   offset?: number;
+  tagSlug?: string;
 }): Promise<PieceWithAuthor[]> {
   const limit = opts?.limit ?? 20;
   const offset = opts?.offset ?? 0;
+
+  if (opts?.tagSlug) {
+    // Relational API can't filter by a joined relation — use core select.
+    const rows = await db
+      .select({ piece: pieces, author: users })
+      .from(pieces)
+      .innerJoin(users, eq(pieces.authorId, users.id))
+      .innerJoin(pieceTags, eq(pieceTags.pieceId, pieces.id))
+      .innerJoin(tags, eq(tags.id, pieceTags.tagId))
+      .where(
+        and(
+          eq(pieces.visibility, "public"),
+          eq(pieces.reviewStatus, "approved"),
+          eq(tags.slug, opts.tagSlug),
+        ),
+      )
+      .orderBy(desc(pieces.publishedAt), desc(pieces.createdAt))
+      .limit(limit)
+      .offset(offset);
+    return rows.map((r) => ({ ...r.piece, author: r.author }));
+  }
 
   const rows = await db.query.pieces.findMany({
     where: and(
@@ -117,6 +140,34 @@ export async function getPublishedPieces(opts?: {
   });
 
   return rows as PieceWithAuthor[];
+}
+
+/**
+ * Tags attached to at least one approved+public piece, with counts —
+ * powers the feed's tag filter chips. Ordered most-used first.
+ */
+export async function getFeedTagCounts(): Promise<
+  { id: string; name: string; slug: string; count: number }[]
+> {
+  return db
+    .select({
+      id: tags.id,
+      name: tags.name,
+      slug: tags.slug,
+      count: count(pieceTags.pieceId),
+    })
+    .from(tags)
+    .innerJoin(pieceTags, eq(pieceTags.tagId, tags.id))
+    .innerJoin(
+      pieces,
+      and(
+        eq(pieces.id, pieceTags.pieceId),
+        eq(pieces.visibility, "public"),
+        eq(pieces.reviewStatus, "approved"),
+      ),
+    )
+    .groupBy(tags.id, tags.name, tags.slug)
+    .orderBy(desc(count(pieceTags.pieceId)), tags.slug);
 }
 
 /**
