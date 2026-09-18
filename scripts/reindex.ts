@@ -1,6 +1,6 @@
 // Reindex all pieces to Algolia — run: npx tsx scripts/reindex.ts
 import { db } from "@/lib/db/client";
-import { buildRecord, configureAlgoliaIndex, getIndexName, getClient, hasAlgolia } from "@/lib/search/algolia";
+import { buildRecord, configureAlgoliaIndex, getAdminClient, getIndexName, hasAlgolia } from "@/lib/search/algolia";
 
 async function main() {
   if (!hasAlgolia()) {
@@ -8,7 +8,11 @@ async function main() {
     process.exit(1);
   }
   console.log(`Configuring index ${getIndexName()}...`);
-  await configureAlgoliaIndex();
+  try {
+    await configureAlgoliaIndex();
+  } catch (e) {
+    console.warn("configureAlgoliaIndex failed (key may lack settings ACL) — continuing to indexing:", (e as Error).message);
+  }
 
   console.log("Fetching pieces...");
   const rows = await db.query.pieces.findMany({
@@ -17,7 +21,7 @@ async function main() {
   const records = rows.map((r) => buildRecord(r, r.author));
 
   console.log(`Indexing ${records.length} records to ${getIndexName()}...`);
-  const client = getClient();
+  const client = getAdminClient();
   await client.replaceAllObjects({
     indexName: getIndexName(),
     objects: records as unknown as Record<string, unknown>[],

@@ -1,5 +1,3 @@
-import "server-only";
-
 import { algoliasearch } from "algoliasearch";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
@@ -27,6 +25,14 @@ export type SearchResult = PieceWithAuthor & {
 };
 
 function hasAlgolia(): boolean {
+  // Search can use either admin or search-only key
+  return Boolean(
+    process.env.ALGOLIA_APP_ID &&
+      (process.env.ALGOLIA_ADMIN_API_KEY || process.env.ALGOLIA_SEARCH_API_KEY || process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY),
+  );
+}
+
+function hasAlgoliaAdmin(): boolean {
   return Boolean(process.env.ALGOLIA_APP_ID && process.env.ALGOLIA_ADMIN_API_KEY);
 }
 
@@ -36,11 +42,26 @@ function getIndexName(): string {
   return `cotwb_pieces_${env}`;
 }
 
-function getClient() {
+function getAdminClient() {
   const appId = process.env.ALGOLIA_APP_ID;
   const apiKey = process.env.ALGOLIA_ADMIN_API_KEY;
+  if (!appId || !apiKey) throw new Error("Algolia admin not configured");
+  return algoliasearch(appId, apiKey);
+}
+
+function getSearchClient() {
+  const appId = process.env.ALGOLIA_APP_ID;
+  const apiKey =
+    process.env.ALGOLIA_SEARCH_API_KEY ||
+    process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY ||
+    process.env.ALGOLIA_ADMIN_API_KEY;
   if (!appId || !apiKey) throw new Error("Algolia not configured");
   return algoliasearch(appId, apiKey);
+}
+
+// Keep getClient as alias to admin for backwards compat
+function getClient() {
+  return getAdminClient();
 }
 
 function stripHtml(html: string): string {
@@ -68,20 +89,20 @@ function buildRecord(piece: typeof pieces.$inferSelect, author: typeof users.$in
 }
 
 export async function upsertPieceToAlgolia(pieceId: string): Promise<void> {
-  if (!hasAlgolia()) return;
+  if (!hasAlgoliaAdmin()) return;
   const row = await db.query.pieces.findFirst({
     where: eq(pieces.id, pieceId),
     with: { author: true },
   });
   if (!row) return;
   const record = buildRecord(row, row.author);
-  const client = getClient();
+  const client = getAdminClient();
   await client.saveObject({ indexName: getIndexName(), body: record as unknown as Record<string, unknown> });
 }
 
 export async function deletePieceFromAlgolia(pieceId: string): Promise<void> {
-  if (!hasAlgolia()) return;
-  const client = getClient();
+  if (!hasAlgoliaAdmin()) return;
+  const client = getAdminClient();
   await client.deleteObject({ indexName: getIndexName(), objectID: pieceId });
 }
 
@@ -113,7 +134,7 @@ export async function searchAlgolia(
     }
   }
 
-  const client = getClient();
+  const client = getSearchClient();
   const res = await client.searchSingleIndex<AlgoliaPieceRecord>({
     indexName: getIndexName(),
     searchParams: {
@@ -157,8 +178,8 @@ export async function searchAlgolia(
 }
 
 export async function configureAlgoliaIndex(): Promise<void> {
-  if (!hasAlgolia()) return;
-  const client = getClient();
+  if (!hasAlgoliaAdmin()) return;
+  const client = getAdminClient();
   // setSettings — best practice: filterOnly avoids facet computation overhead
   await client.setSettings({
     indexName: getIndexName(),
@@ -174,4 +195,4 @@ export async function configureAlgoliaIndex(): Promise<void> {
   });
 }
 
-export { hasAlgolia, getIndexName, getClient, stripHtml, buildRecord };
+export { hasAlgolia, hasAlgoliaAdmin, getIndexName, getClient, getAdminClient, getSearchClient, stripHtml, buildRecord };
