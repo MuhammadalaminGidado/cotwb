@@ -127,10 +127,13 @@ export async function searchAlgolia(
     if (!viewer) {
       filters = "reviewStatus:approved AND visibility:public";
     } else {
-      const visibilityOr = groupIds.length > 0 ? "(visibility:public OR visibility:group)" : "visibility:public";
-      // Author bypass as OR — Algolia filters supports `OR` at top level
-      // Escape authorId (uuid safe, no spaces)
-      filters = `authorId:${viewer.id} OR (reviewStatus:approved AND ${visibilityOr})`;
+      // Algolia forbids (A AND B) OR C — rewrite A OR (B AND C) as (A OR B) AND (A OR C)
+      const author = `authorId:${viewer.id}`;
+      if (groupIds.length > 0) {
+        filters = `(${author} OR reviewStatus:approved) AND (${author} OR visibility:public OR visibility:group)`;
+      } else {
+        filters = `(${author} OR reviewStatus:approved) AND (${author} OR visibility:public)`;
+      }
     }
   }
 
@@ -200,8 +203,11 @@ export async function getFiltersForViewer(viewer: LocalUser | null): Promise<str
   const isAdmin = viewer?.role === "admin";
   if (isAdmin) return "";
   if (!viewer) return "reviewStatus:approved AND visibility:public";
-  const visibilityOr = groupIds.length > 0 ? "(visibility:public OR visibility:group)" : "visibility:public";
-  return `authorId:${viewer.id} OR (reviewStatus:approved AND ${visibilityOr})`;
+  const author = `authorId:${viewer.id}`;
+  if (groupIds.length > 0) {
+    return `(${author} OR reviewStatus:approved) AND (${author} OR visibility:public OR visibility:group)`;
+  }
+  return `(${author} OR reviewStatus:approved) AND (${author} OR visibility:public)`;
 }
 
 export function getSearchCredentials(): { appId: string; searchKey: string; indexName: string } | null {

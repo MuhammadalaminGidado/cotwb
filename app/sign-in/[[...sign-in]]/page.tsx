@@ -11,7 +11,7 @@ export default async function SignInPage({
   searchParams?: Promise<{ redirect_url?: string }>;
 }) {
   const params = await searchParams;
-  const redirectUrl = getSafeRedirect(params?.redirect_url, "/onboarding");
+  const redirectUrl = getSafeRedirect(params?.redirect_url, "/");
 
   if (!hasClerk()) {
     return (
