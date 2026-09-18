@@ -195,4 +195,49 @@ export async function configureAlgoliaIndex(): Promise<void> {
   });
 }
 
+export async function getFiltersForViewer(viewer: LocalUser | null): Promise<string> {
+  const groupIds = await getViewerGroupIds(viewer);
+  const isAdmin = viewer?.role === "admin";
+  if (isAdmin) return "";
+  if (!viewer) return "reviewStatus:approved AND visibility:public";
+  const visibilityOr = groupIds.length > 0 ? "(visibility:public OR visibility:group)" : "visibility:public";
+  return `authorId:${viewer.id} OR (reviewStatus:approved AND ${visibilityOr})`;
+}
+
+export function getSearchCredentials(): { appId: string; searchKey: string; indexName: string } | null {
+  const appId = process.env.ALGOLIA_APP_ID;
+  const searchKey =
+    process.env.ALGOLIA_SEARCH_API_KEY ||
+    process.env.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY ||
+    process.env.ALGOLIA_ADMIN_API_KEY;
+  const indexName = getIndexName();
+  if (!appId || !searchKey) return null;
+  return { appId, searchKey, indexName };
+}
+
+export async function generateSecuredSearchKey(
+  viewer: LocalUser | null,
+): Promise<{ securedKey: string; filters: string; indexName: string; appId: string } | null> {
+  const creds = getSearchCredentials();
+  if (!creds) return null;
+  const filters = await getFiltersForViewer(viewer);
+  // If no filters (admin), return plain key — no restriction needed
+  if (!filters) {
+    return { securedKey: creds.searchKey, filters, indexName: creds.indexName, appId: creds.appId };
+  }
+  try {
+    const client = getSearchClient() as unknown as { generateSecuredApiKey: (opts: unknown) => string };
+    // Secured key with filters + 1h expiry (Algolia expects validUntil in seconds)
+    const validUntil = Math.floor(Date.now() / 1000) + 3600;
+    const securedKey = client.generateSecuredApiKey({
+      parentApiKey: creds.searchKey,
+      restrictions: { filters, validUntil } as unknown as Record<string, unknown>,
+    });
+    return { securedKey, filters, indexName: creds.indexName, appId: creds.appId };
+  } catch {
+    // Fallback to plain key + client-side Configure filters if generation fails
+    return { securedKey: creds.searchKey, filters, indexName: creds.indexName, appId: creds.appId };
+  }
+}
+
 export { hasAlgolia, hasAlgoliaAdmin, getIndexName, getClient, getAdminClient, getSearchClient, stripHtml, buildRecord };

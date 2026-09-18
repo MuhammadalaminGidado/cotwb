@@ -3,8 +3,14 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { hasClerk } from "@/lib/clerk-config";
 import { currentUser } from "@/lib/auth";
 import { OnboardingClient } from "@/components/onboarding-client";
+import { getSafeRedirect } from "@/lib/redirect";
+import { redirect } from "next/navigation";
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ redirect_url?: string }>;
+}) {
   if (!hasClerk()) {
     return (
       <div className="mx-auto w-full max-w-xl px-6 py-16">
@@ -22,6 +28,16 @@ export default async function OnboardingPage() {
   }
 
   const user = await currentUser();
+  const params = await searchParams;
+  const requestedRedirect = getSafeRedirect(params?.redirect_url, "/");
+  // Avoid loop: if already completed and requested dest is onboarding itself, go home.
+  const redirectUrl = requestedRedirect === "/onboarding" ? "/" : requestedRedirect;
+
+  // Existing account that already completed onboarding should never see this screen.
+  // Redirect immediately instead of showing the welcome / mailing form.
+  if (user?.onboardingCompletedAt) {
+    redirect(redirectUrl);
+  }
 
   return (
     <div className="mx-auto w-full max-w-xl px-6 py-8">
