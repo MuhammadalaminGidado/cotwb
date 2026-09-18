@@ -20,3 +20,9 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
 export function sanitizePieceBody(body: string): string {
   return sanitizeHtml(body, SANITIZE_OPTIONS);
 }
+
+export function sanitizeHeadline(headline: string): string {
+  // ts_headline output contains <mark> highlights — SANITIZE_OPTIONS already
+  // allows mark, so reuse the same allowlist (explicit wrapper for intent).
+  return sanitizeHtml(headline, SANITIZE_OPTIONS);
+}

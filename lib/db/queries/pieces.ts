@@ -1,7 +1,8 @@
 import { and, count, desc, eq, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
-import { memberships, pieceTags, pieces, tags, users } from "@/lib/db/schema";
+import { pieceTags, pieces, tags, users } from "@/lib/db/schema";
 import type { LocalUser } from "@/lib/auth";
+import { getViewerGroupIds } from "@/lib/db/queries/shared";
 
 /**
  * Centralized visibility + reviewStatus filtering.
@@ -13,14 +14,7 @@ export type PieceWithAuthor = typeof pieces.$inferSelect & {
   author: typeof users.$inferSelect;
 };
 
-async function getViewerGroupIds(viewer: LocalUser | null): Promise<string[]> {
-  if (!viewer) return [];
-  const rows = await db
-    .select({ groupId: memberships.groupId })
-    .from(memberships)
-    .where(eq(memberships.userId, viewer.id));
-  return rows.map((r) => r.groupId);
-}
+
 
 /**
  * Returns true if `viewer` can view `piece` given viewer's group memberships.
