@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { hasClerk } from "@/lib/clerk-config";
+import { redirect } from "next/navigation";
 
 export default async function AppLayout({
   children,
@@ -29,6 +30,15 @@ export default async function AppLayout({
   await auth.protect();
 
   const user = await currentUser();
+  // Completed users should never see /onboarding — bounce to home even before page renders (avoids flash)
+  if (user?.onboardingCompletedAt) {
+    const { headers } = await import("next/headers");
+    const hdrs = await headers();
+    const pathname = hdrs.get("x-pathname") ?? "";
+    if (pathname.startsWith("/onboarding")) {
+      redirect("/");
+    }
+  }
   if (!user) {
     // If we're on /onboarding, show the full onboarding UI immediately so the
     // reader/writer choice is visible without 12s. For other protected routes,

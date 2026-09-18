@@ -6,6 +6,8 @@ import { OnboardingClient } from "@/components/onboarding-client";
 import { getSafeRedirect } from "@/lib/redirect";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function OnboardingPage({
   searchParams,
 }: {

@@ -45,7 +45,6 @@ export default async function SignInPage({
       <div className="flex flex-1 items-center justify-center py-8">
         <SignIn
           appearance={clerkAppearance}
-          forceRedirectUrl={redirectUrl}
           fallbackRedirectUrl={redirectUrl}
         />
       </div>

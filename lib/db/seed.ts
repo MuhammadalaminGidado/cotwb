@@ -16,6 +16,8 @@ async function seed() {
   console.log("Seeding...");
 
   // ─── Users ────────────────────────────────────────────────────
+  // Backfill: seeded users are considered already onboarded so sign-in doesn't force /onboarding
+  const now = new Date();
   const [admin, alice, bob] = await db
     .insert(users)
     .values([
@@ -26,6 +28,7 @@ async function seed() {
         username: "admin",
         displayName: "Admin",
         bio: "Site administrator",
+        onboardingCompletedAt: now,
       },
       {
         clerkId: "clerk_alice_001",
@@ -34,6 +37,7 @@ async function seed() {
         username: "alice",
         displayName: "Alice Writer",
         bio: "Fiction and essays",
+        onboardingCompletedAt: now,
       },
       {
         clerkId: "clerk_bob_001",
@@ -42,6 +46,7 @@ async function seed() {
         username: "bob",
         displayName: "Bob Reader",
         bio: "Avid reader",
+        onboardingCompletedAt: now,
       },
     ])
     .returning();

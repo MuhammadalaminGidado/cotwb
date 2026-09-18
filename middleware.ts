@@ -12,8 +12,10 @@ export default function middleware(
   event: Parameters<NonNullable<typeof clerkHandler>>[1],
 ) {
   const pathnameHeader = request.nextUrl.pathname;
+  // Mutate request headers directly so Server Components see x-pathname via headers()
+  // and also keep a copy for NextResponse.next propagation
+  request.headers.set("x-pathname", pathnameHeader);
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-pathname", pathnameHeader);
 
   const withHeader = (res: NextResponse) => {
     res.headers.set("x-pathname", pathnameHeader);
@@ -27,7 +29,10 @@ export default function middleware(
     if (res && typeof (res as Promise<unknown>).catch === "function") {
       return (res as Promise<NextResponse>)
         .then((r) => {
-          if (r instanceof NextResponse) return withHeader(r);
+          if (r instanceof NextResponse) {
+            r.headers.set("x-pathname", pathnameHeader);
+            return withHeader(r);
+          }
           return withHeader(NextResponse.next({ request: { headers: requestHeaders } }));
         })
         .catch((err) => {
@@ -35,7 +40,10 @@ export default function middleware(
           return withHeader(NextResponse.next({ request: { headers: requestHeaders } }));
         });
     }
-    if (res instanceof NextResponse) return withHeader(res);
+    if (res instanceof NextResponse) {
+      res.headers.set("x-pathname", pathnameHeader);
+      return withHeader(res);
+    }
     return withHeader(NextResponse.next({ request: { headers: requestHeaders } }));
   } catch (err) {
     console.warn("[middleware] clerkMiddleware threw, falling back", err);

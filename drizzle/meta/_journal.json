@@ -29,6 +29,13 @@
       "when": 1789751289890,
       "tag": "0003_minor_wrecker",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789830000000,
+      "tag": "0004_backfill_onboarding",
+      "breakpoints": true
     }
   ]
 }
