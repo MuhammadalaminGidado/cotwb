@@ -46,14 +46,21 @@ export default async function SearchPage({
   const isValidQuery = q.length >= 2;
   const viewer = await currentUser();
 
-  // Fetch one extra to detect next page
-  const rows = isValidQuery
-    ? await searchPieces(q, viewer, {
+  // Viewer-aware search with banner on error — never throw to error boundary.
+  let rows: Awaited<ReturnType<typeof searchPieces>> = [];
+  let searchError = false;
+  if (isValidQuery) {
+    try {
+      rows = await searchPieces(q, viewer, {
         limit: PAGE_SIZE + 1,
         offset: (page - 1) * PAGE_SIZE,
-      })
-    : [];
-  const hasNext = rows.length > PAGE_SIZE;
+      });
+    } catch (e) {
+      console.error("[search] searchPieces failed", e);
+      searchError = true;
+    }
+  }
+  const hasNext = !searchError && rows.length > PAGE_SIZE;
   const results = rows.slice(0, PAGE_SIZE);
 
   const pageHref = (p: number) => {
@@ -74,7 +81,22 @@ export default async function SearchPage({
           <SearchInput defaultValue={q} />
         </div>
 
-        {!q ? (
+        {searchError ? (
+          <div
+            role="alert"
+            className="mt-6 rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-text-primary"
+          >
+            Search is temporarily unavailable — please try again.
+            <div className="mt-2 flex gap-3">
+              <Link href={`/search?q=${encodeURIComponent(q)}`} className="font-medium text-accent-primary underline">
+                Retry
+              </Link>
+              <Link href="/" className="font-medium text-text-muted underline">
+                Browse latest pieces
+              </Link>
+            </div>
+          </div>
+        ) : !q ? (
           <div className="mt-10 rounded-xl border border-border bg-surface p-8 text-center">
             <p className="text-sm text-text-muted">Type a query above to search published pieces.</p>
             <p className="mt-2 text-xs text-text-muted opacity-70">Try &ldquo;poetry&rdquo;, &ldquo;fiction&rdquo;, or a phrase from a title.</p>

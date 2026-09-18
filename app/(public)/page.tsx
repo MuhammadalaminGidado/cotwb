@@ -1,8 +1,12 @@
-import Link from "next/link";
-import { ArrowLeftIcon, ArrowRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { SiteHeader } from "@/components/site-header";
 import { PieceCard } from "@/components/piece-card";
+import { SiteHeader } from "@/components/site-header";
 import { getFeedTagCounts, getPublishedPieces } from "@/lib/db/queries/pieces";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 const PAGE_SIZE = 10;
 
@@ -15,15 +19,25 @@ export default async function FeedPage({
   const page = Math.max(1, Number(params?.page) || 1);
   const tagSlug = params?.tag?.trim() || null;
 
-  // Fetch one extra row to detect whether a next page exists.
-  const rows = await getPublishedPieces({
-    limit: PAGE_SIZE + 1,
-    offset: (page - 1) * PAGE_SIZE,
-    tagSlug: tagSlug ?? undefined,
-  });
+  // Fetch with graceful fallback — DB drift (e.g. pending 0002) must not 500 the feed.
+  let rows: Awaited<ReturnType<typeof getPublishedPieces>> = [];
+  let feedTags: Awaited<ReturnType<typeof getFeedTagCounts>> = [];
+  try {
+    rows = await getPublishedPieces({
+      limit: PAGE_SIZE + 1,
+      offset: (page - 1) * PAGE_SIZE,
+      tagSlug: tagSlug ?? undefined,
+    });
+  } catch (e) {
+    console.error("[feed] getPublishedPieces failed", e);
+  }
+  try {
+    feedTags = await getFeedTagCounts();
+  } catch (e) {
+    console.error("[feed] getFeedTagCounts failed", e);
+  }
   const hasNext = rows.length > PAGE_SIZE;
   const pieces = rows.slice(0, PAGE_SIZE);
-  const feedTags = await getFeedTagCounts();
 
   const pageHref = (p: number) => {
     const qs = new URLSearchParams();
@@ -64,7 +78,9 @@ export default async function FeedPage({
                   className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-text-muted transition-colors hover:bg-bg hover:text-text-primary"
                 >
                   {tag.name}
-                  <span className="text-[10px] text-text-muted opacity-70">{tag.count}</span>
+                  <span className="text-[10px] text-text-muted opacity-70">
+                    {tag.count}
+                  </span>
                 </Link>
               ))}
           </div>
@@ -83,13 +99,16 @@ export default async function FeedPage({
         ) : (
           <ul className="mt-8 space-y-4">
             {pieces.map((piece) => (
-              <PieceCard key={piece.id} piece={piece} />
+              <PieceCard key={piece?.id} piece={piece} />
             ))}
           </ul>
         )}
 
         {page > 1 || hasNext ? (
-          <nav className="mt-8 flex items-center justify-between" aria-label="Pagination">
+          <nav
+            className="mt-8 flex items-center justify-between"
+            aria-label="Pagination"
+          >
             {page > 1 ? (
               <Link
                 href={pageHref(page - 1)}

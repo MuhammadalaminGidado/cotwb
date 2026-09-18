@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db/client";
 import { pieceVersions, pieces } from "@/lib/db/schema";
 import { canWrite, currentUser } from "@/lib/auth";
+import { inngest } from "@/lib/inngest/client";
 
 function slugify(input: string): string {
   return input
@@ -81,6 +82,13 @@ export async function createDraft(
   revalidatePath("/write");
   revalidatePath("/");
 
+  // Async Algolia sync — best practice: fire-and-forget via Inngest, never block the mutation.
+  try {
+    await inngest.send({ name: "piece/sync", data: { pieceId: piece.id, action: "upsert" } });
+  } catch (e) {
+    console.error("[algolia] piece/sync send failed", e);
+  }
+
   return { success: true, pieceId: piece.id, slug: piece.slug };
 }
 
@@ -151,6 +159,12 @@ export async function updatePiece(
   revalidatePath(`/write/${id}/edit`);
   revalidatePath("/");
 
+  try {
+    await inngest.send({ name: "piece/sync", data: { pieceId: id, action: "upsert" } });
+  } catch (e) {
+    console.error("[algolia] piece/sync send failed", e);
+  }
+
   return { success: true, slug: updated.slug };
 }
 
@@ -189,6 +203,12 @@ export async function submitForReview(
   revalidatePath("/review-queue");
   revalidatePath(`/write/${parsed.data.id}/edit`);
 
+  try {
+    await inngest.send({ name: "piece/sync", data: { pieceId: parsed.data.id, action: "upsert" } });
+  } catch (e) {
+    console.error("[algolia] piece/sync send failed", e);
+  }
+
   return { success: true };
 }
 
@@ -222,6 +242,12 @@ export async function deletePiece(
 
   revalidatePath("/write");
   revalidatePath("/");
+
+  try {
+    await inngest.send({ name: "piece/sync", data: { pieceId: parsed.data.id, action: "delete" } });
+  } catch (e) {
+    console.error("[algolia] piece/sync delete send failed", e);
+  }
 
   return { success: true };
 }

@@ -1,7 +1,5 @@
 import {
   boolean,
-  customType,
-  index,
   integer,
   pgEnum,
   pgTable,
@@ -12,7 +10,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 
 // ─── Enums ──────────────────────────────────────────────────────────
 
@@ -63,40 +61,26 @@ export const users = pgTable("users", {
 
 // ─── Pieces ─────────────────────────────────────────────────────────
 
-// Full-text search vector for pieces (5.5): title weighted A, body weighted B.
-const tsvector = customType<{ data: string }>({
-  dataType() {
-    return "tsvector";
-  },
+export const pieces = pgTable("pieces", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  title: varchar("title", { length: 256 }).notNull(),
+  slug: varchar("slug", { length: 256 }).notNull().unique(),
+  body: text("body").notNull(),
+  authorId: uuid("author_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  visibility: visibilityEnum("visibility").notNull().default("public"),
+  reviewStatus: reviewStatusEnum("review_status").notNull().default("draft"),
+  promptId: uuid("prompt_id").references(() => prompts.id, {
+    onDelete: "set null",
+  }),
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
-
-export const pieces = pgTable(
-  "pieces",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    title: varchar("title", { length: 256 }).notNull(),
-    slug: varchar("slug", { length: 256 }).notNull().unique(),
-    body: text("body").notNull(),
-    authorId: uuid("author_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    visibility: visibilityEnum("visibility").notNull().default("public"),
-    reviewStatus: reviewStatusEnum("review_status").notNull().default("draft"),
-    promptId: uuid("prompt_id").references(() => prompts.id, {
-      onDelete: "set null",
-    }),
-    publishedAt: timestamp("published_at"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at")
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-    searchVector: tsvector("search_vector").generatedAlwaysAs(
-      sql`setweight(to_tsvector('english', title), 'A') || setweight(to_tsvector('english', body), 'B')`,
-    ),
-  },
-  (t) => [index("pieces_search_vector_idx").using("gin", t.searchVector)],
-);
 
 export const pieceVersions = pgTable("piece_versions", {
   id: uuid("id").primaryKey().defaultRandom(),

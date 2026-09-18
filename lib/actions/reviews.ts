@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db/client";
 import { pieces, reviews } from "@/lib/db/schema";
 import { canModerate, currentUser } from "@/lib/auth";
+import { inngest } from "@/lib/inngest/client";
 
 const reviewSchema = z.object({
   pieceId: z.string().uuid(),
@@ -56,6 +57,12 @@ export async function approvePiece(
   revalidatePath(`/pieces/${piece.slug}`);
   revalidatePath(`/write/${piece.id}/edit`);
 
+  try {
+    await inngest.send({ name: "piece/sync", data: { pieceId: piece.id, action: "upsert" } });
+  } catch (e) {
+    console.error("[algolia] piece/sync send failed", e);
+  }
+
   return { success: true };
 }
 
@@ -96,6 +103,12 @@ export async function rejectPiece(
 
   revalidatePath("/review-queue");
   revalidatePath(`/write/${piece.id}/edit`);
+
+  try {
+    await inngest.send({ name: "piece/sync", data: { pieceId: piece.id, action: "upsert" } });
+  } catch (e) {
+    console.error("[algolia] piece/sync send failed", e);
+  }
 
   return { success: true };
 }

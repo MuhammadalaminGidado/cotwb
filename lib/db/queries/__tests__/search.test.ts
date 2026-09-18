@@ -1,39 +1,59 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-explicit-any */
+// @ts-nocheck — hoisted mocks with loose typing for Algolia v5
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockDb } = vi.hoisted(() => {
-  const chain = (): Record<string, ReturnType<typeof vi.fn>> => {
-    const c: Record<string, ReturnType<typeof vi.fn>> = {};
-    c.innerJoin = vi.fn(() => c);
-    c.where = vi.fn(() => c);
-    c.orderBy = vi.fn(() => c);
-    c.limit = vi.fn(() => c);
-    c.offset = vi.fn(() => Promise.resolve([]));
-    c.from = vi.fn(() => c);
-    c.select = vi.fn(() => c);
-    return c;
-  };
-  const selectChain = chain();
-  const selectFn = vi.fn(() => selectChain);
-  return {
-    mockDb: {
-      select: selectFn,
-      __selectChain: selectChain,
-      __selectFn: selectFn,
-      query: { pieces: { findMany: vi.fn() } },
-    },
-  };
-});
+vi.mock("server-only", () => ({}));
+
+const { mockSearchSingleIndex } = vi.hoisted(() => ({
+  mockSearchSingleIndex: vi.fn(async () => ({ hits: [] } as any)),
+}));
 
 const { mockGetViewerGroupIds } = vi.hoisted(() => ({
   mockGetViewerGroupIds: vi.fn(async () => [] as string[]),
 }));
 
-vi.mock("@/lib/db/client", () => ({ db: mockDb, pool: {} }));
+const { mockHydratedFindMany } = vi.hoisted(() => ({
+  mockHydratedFindMany: vi.fn(async () => []),
+}));
+
+vi.mock("algoliasearch", () => ({
+  algoliasearch: vi.fn(() => ({
+    searchSingleIndex: mockSearchSingleIndex,
+    saveObject: vi.fn(async () => ({})),
+    deleteObject: vi.fn(async () => ({})),
+    setSettings: vi.fn(async () => ({})),
+    replaceAllObjects: vi.fn(async () => ({})),
+  })),
+}));
+
 vi.mock("@/lib/db/queries/shared", () => ({
   getViewerGroupIds: mockGetViewerGroupIds,
 }));
 
-import { searchPieces, searchPiecesCount } from "@/lib/db/queries/search";
+vi.mock("@/lib/db/client", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/db/client")>("@/lib/db/client");
+  return {
+    ...actual,
+    db: {
+      ...actual.db,
+      query: {
+        ...actual.db.query,
+        pieces: {
+          ...actual.db.query.pieces,
+          findMany: mockHydratedFindMany,
+          findFirst: vi.fn(async () => null),
+        },
+      },
+    },
+  };
+});
+
+// Ensure algolia env for tests
+process.env.ALGOLIA_APP_ID = "test-app-id";
+process.env.ALGOLIA_ADMIN_API_KEY = "test-admin-key";
+process.env.ALGOLIA_INDEX_NAME = "test_index";
+
+import { searchPieces } from "@/lib/db/queries/search";
 
 function makeViewer(overrides: Partial<Record<string, unknown>> = {}) {
   return {
@@ -47,117 +67,126 @@ function makeViewer(overrides: Partial<Record<string, unknown>> = {}) {
   } as unknown as Parameters<typeof searchPieces>[1];
 }
 
-describe("searchPieces", () => {
+describe("searchPieces (Algolia)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetViewerGroupIds.mockResolvedValue([]);
-    mockDb.__selectChain.offset.mockResolvedValue([]);
+    mockHydratedFindMany.mockResolvedValue([]);
+    mockSearchSingleIndex.mockResolvedValue({ hits: [] });
   });
 
-  it("returns [] without DB hit for empty query", async () => {
+  it("returns [] without Algolia hit for empty query", async () => {
     const res = await searchPieces("", null);
     expect(res).toEqual([]);
-    expect(mockDb.__selectFn).not.toHaveBeenCalled();
+    expect(mockSearchSingleIndex).not.toHaveBeenCalled();
   });
 
   it("returns [] for short query (<2 chars)", async () => {
     const res = await searchPieces("a", null);
     expect(res).toEqual([]);
-    expect(mockDb.__selectFn).not.toHaveBeenCalled();
+    expect(mockSearchSingleIndex).not.toHaveBeenCalled();
   });
 
-  it("trims query and still short-circuits whitespace", async () => {
+  it("trims whitespace and short-circuits", async () => {
     const res = await searchPieces("  ", null);
     expect(res).toEqual([]);
-    expect(mockDb.__selectFn).not.toHaveBeenCalled();
+    expect(mockSearchSingleIndex).not.toHaveBeenCalled();
   });
 
-  it("queries with ts_vector match and rank ordering for anon", async () => {
-    mockDb.__selectChain.offset.mockResolvedValue([]);
+  it("queries Algolia with anon filters (approved+public)", async () => {
     await searchPieces("poetry", null, { limit: 5, offset: 10 });
-    expect(mockDb.__selectFn).toHaveBeenCalled();
-    expect(mockDb.__selectChain.innerJoin).toHaveBeenCalled();
-    expect(mockDb.__selectChain.where).toHaveBeenCalledWith(expect.anything());
-    expect(mockDb.__selectChain.orderBy).toHaveBeenCalled();
-    expect(mockDb.__selectChain.limit).toHaveBeenCalledWith(5);
-    expect(mockDb.__selectChain.offset).toHaveBeenCalledWith(10);
+    expect(mockSearchSingleIndex).toHaveBeenCalledWith(
+      expect.objectContaining({
+        searchParams: expect.objectContaining({
+          query: "poetry",
+          filters: "reviewStatus:approved AND visibility:public",
+          hitsPerPage: 5,
+          page: 2, // offset 10 / limit 5 = page 2
+        }),
+      }),
+    );
     expect(mockGetViewerGroupIds).toHaveBeenCalledWith(null);
   });
 
-  it("includes author bypass OR branch when viewer is present", async () => {
-    const viewer = makeViewer();
+  it("includes author bypass OR branch when viewer present (no groups)", async () => {
+    const viewer = makeViewer() as NonNullable<ReturnType<typeof makeViewer>>;
     mockGetViewerGroupIds.mockResolvedValue([]);
-    mockDb.__selectChain.offset.mockResolvedValue([]);
     await searchPieces("fiction", viewer);
-    expect(mockDb.__selectChain.where).toHaveBeenCalled();
-    expect(mockGetViewerGroupIds).toHaveBeenCalledWith(viewer);
+    expect(mockSearchSingleIndex).toHaveBeenCalledWith(
+      expect.objectContaining({
+        searchParams: expect.objectContaining({
+          filters: expect.stringContaining(`authorId:${(viewer as any).id}`),
+        }),
+      }),
+    );
   });
 
-  it("fetches group ids and allows group visibility when member", async () => {
-    const viewer = makeViewer({ id: "viewer-1" });
+  it("allows group visibility when member", async () => {
+    const viewer = makeViewer({ id: "viewer-1" }) as NonNullable<ReturnType<typeof makeViewer>>;
     mockGetViewerGroupIds.mockResolvedValue(["g1"]);
-    mockDb.__selectChain.offset.mockResolvedValue([]);
     await searchPieces("sunset", viewer);
     expect(mockGetViewerGroupIds).toHaveBeenCalledWith(viewer);
-    expect(mockDb.__selectChain.where).toHaveBeenCalled();
+    expect(mockSearchSingleIndex).toHaveBeenCalledWith(
+      expect.objectContaining({
+        searchParams: expect.objectContaining({
+          filters: expect.stringContaining("visibility:group"),
+        }),
+      }),
+    );
   });
 
-  it("admin bypass still queries (visibility not filtered)", async () => {
-    const admin = makeViewer({ role: "admin" });
-    mockGetViewerGroupIds.mockResolvedValue([]);
-    mockDb.__selectChain.offset.mockResolvedValue([]);
-    await searchPieces("admin query", admin);
-    expect(mockDb.__selectFn).toHaveBeenCalled();
-    expect(mockDb.__selectChain.where).toHaveBeenCalled();
+  it("admin bypass has no filters", async () => {
+    const admin = makeViewer({ role: "admin" }) as NonNullable<ReturnType<typeof makeViewer>>;
+    await searchPieces("admin query", admin as any);
+    expect(mockSearchSingleIndex).toHaveBeenCalledWith(
+      expect.objectContaining({
+        searchParams: expect.objectContaining({
+          filters: undefined,
+        }),
+      }),
+    );
   });
 
   it("uses default pagination when no opts", async () => {
-    mockDb.__selectChain.offset.mockResolvedValue([]);
     await searchPieces("hello", null);
-    expect(mockDb.__selectChain.limit).toHaveBeenCalledWith(20);
-    expect(mockDb.__selectChain.offset).toHaveBeenCalledWith(0);
+    expect(mockSearchSingleIndex).toHaveBeenCalledWith(
+      expect.objectContaining({
+        searchParams: expect.objectContaining({ hitsPerPage: 20, page: 0 }),
+      }),
+    );
   });
 
-  it("maps rows to SearchResult with author/rank/headline", async () => {
-    const fakeRow = {
-      piece: { id: "p1", title: "T", body: "B", authorId: "u1" },
-      author: { id: "u1", username: "author" },
-      rank: 0.5,
-      headline: "<mark>poetry</mark> snippet",
-    };
-    mockDb.__selectChain.offset.mockResolvedValue([fakeRow]);
-    mockGetViewerGroupIds.mockResolvedValue([]);
+  it("hydrates hits via DB and attaches headline", async () => {
+    const fakeHits = [
+      {
+        objectID: "p1",
+        title: "T",
+        slug: "t",
+        _highlightResult: { body: { value: "<mark>poetry</mark> snippet" } },
+      },
+    ] as any;
+    mockSearchSingleIndex.mockResolvedValue({ hits: fakeHits } as any);
+    mockHydratedFindMany.mockResolvedValue([
+      {
+        id: "p1",
+        title: "T",
+        slug: "t",
+        body: "<p>B</p>",
+        authorId: "u1",
+        author: { id: "u1", username: "author", displayName: "Author" },
+        visibility: "public",
+        reviewStatus: "approved",
+        publishedAt: new Date(),
+        createdAt: new Date(),
+      },
+    ] as any);
+
     const res = await searchPieces("poetry", null);
     expect(res[0]).toMatchObject({
       id: "p1",
       author: { username: "author" },
-      rank: 0.5,
       headline: "<mark>poetry</mark> snippet",
     });
-  });
-});
-
-describe("searchPiecesCount", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockGetViewerGroupIds.mockResolvedValue([]);
-    // searchPiecesCount uses .where -> no orderBy/limit/offset, ends with awaiting rows.length on the chain
-    // Our chain's offset resolves, but searchPiecesCount doesn't call offset — it awaits the chain directly via `from().where()` which returns chain; we need to make `where` resolve to array for count path.
-    // In search.ts, searchPiecesCount does: await db.select(...).from(...).innerJoin(...).where(whereClause) -> rows
-    // That final chain object is then `.length` — so we need `where` to resolve to array.
-    // Adjust: where returns promise resolving to array for count tests
-  });
-
-  it("returns 0 for empty query without DB hit", async () => {
-    const c = await searchPiecesCount("", null);
-    expect(c).toBe(0);
-    expect(mockDb.__selectFn).not.toHaveBeenCalled();
-  });
-
-  it("counts via select+where for valid query", async () => {
-    mockDb.__selectChain.where.mockResolvedValue([{ piece: {}, author: {} }, { piece: {}, author: {} }]);
-    const c = await searchPiecesCount("poetry", null);
-    expect(c).toBe(2);
-    expect(mockDb.__selectFn).toHaveBeenCalled();
+    expect(typeof res[0].rank).toBe("number");
   });
 });
