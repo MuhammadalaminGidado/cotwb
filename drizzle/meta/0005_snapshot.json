@@ -1,6 +1,6 @@
 {
-  "id": "b70ebf5e-3053-4b0c-8ad3-d6dfd76ba423",
-  "prevId": "dc723fde-d7f8-4580-9cf1-bca78a25882e",
+  "id": "53f7884e-ed07-49dd-aa91-3ee6b45d715f",
+  "prevId": "b70ebf5e-3053-4b0c-8ad3-d6dfd76ba423",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -758,6 +758,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "group_id": {
+          "name": "group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "published_at": {
           "name": "published_at",
           "type": "timestamp",
@@ -800,6 +806,19 @@
           "tableTo": "prompts",
           "columnsFrom": [
             "prompt_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "pieces_group_id_writing_groups_id_fk": {
+          "name": "pieces_group_id_writing_groups_id_fk",
+          "tableFrom": "pieces",
+          "tableTo": "writing_groups",
+          "columnsFrom": [
+            "group_id"
           ],
           "columnsTo": [
             "id"

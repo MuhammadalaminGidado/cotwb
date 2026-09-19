@@ -3,6 +3,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { BecomeWriterDialog } from "@/components/become-writer-dialog";
 import { NewPieceForm } from "@/components/editor/new-piece-form";
 import { canModerate, canWrite, currentUser } from "@/lib/auth";
+import { getViewerGroups } from "@/lib/db/queries/shared";
 
 export default async function WriteNewPage() {
   const user = await currentUser();
@@ -44,6 +45,8 @@ export default async function WriteNewPage() {
     );
   }
 
+  const groups = await getViewerGroups(user);
+
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-8">
       <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-primary">
@@ -54,7 +57,7 @@ export default async function WriteNewPage() {
         Create a draft. It will autosave once you open the editor.
       </p>
       <div className="mt-6">
-        <NewPieceForm />
+        <NewPieceForm groups={groups} />
       </div>
     </div>
   );

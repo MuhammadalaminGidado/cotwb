@@ -11,6 +11,8 @@ type Props = {
   initialTitle: string;
   initialBody: string;
   initialVisibility: "public" | "group" | "private";
+  initialGroupId: string | null;
+  groups: { id: string; name: string; slug: string }[];
   onSubmitted?: () => void;
 };
 
@@ -19,15 +21,23 @@ export function PieceEditor({
   initialTitle,
   initialBody,
   initialVisibility,
+  initialGroupId,
+  groups,
 }: Props) {
   const [title, setTitle] = useState(initialTitle);
   const [visibility, setVisibility] = useState(initialVisibility);
+  const [groupId, setGroupId] = useState<string | null>(initialGroupId);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const router = useRouter();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSavedRef = useRef({ title: initialTitle, body: initialBody, visibility: initialVisibility });
+  const lastSavedRef = useRef({
+    title: initialTitle,
+    body: initialBody,
+    visibility: initialVisibility,
+    groupId: initialGroupId,
+  });
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -42,12 +52,13 @@ export function PieceEditor({
   });
 
   const doSave = useCallback(
-    (nextTitle: string, nextBody: string, nextVisibility: string) => {
+    (nextTitle: string, nextBody: string, nextVisibility: string, nextGroupId: string | null) => {
       // Skip if nothing changed
       if (
         nextTitle === lastSavedRef.current.title &&
         nextBody === lastSavedRef.current.body &&
-        nextVisibility === lastSavedRef.current.visibility
+        nextVisibility === lastSavedRef.current.visibility &&
+        nextGroupId === lastSavedRef.current.groupId
       ) {
         return;
       }
@@ -61,6 +72,7 @@ export function PieceEditor({
           title: nextTitle,
           body: nextBody,
           visibility: nextVisibility as "public" | "group" | "private",
+          groupId: nextVisibility === "group" ? nextGroupId : null,
         });
 
         if (result.success) {
@@ -68,6 +80,7 @@ export function PieceEditor({
             title: nextTitle,
             body: nextBody,
             visibility: nextVisibility as "public" | "group" | "private",
+            groupId: nextGroupId,
           };
           setSaveState("saved");
           setTimeout(() => setSaveState("idle"), 1500);
@@ -89,10 +102,10 @@ export function PieceEditor({
   );
 
   const scheduleSave = useCallback(
-    (nextTitle: string, nextBody: string, nextVisibility: string) => {
+    (nextTitle: string, nextBody: string, nextVisibility: string, nextGroupId: string | null) => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => {
-        doSave(nextTitle, nextBody, nextVisibility);
+        doSave(nextTitle, nextBody, nextVisibility, nextGroupId);
       }, 800);
     },
     [doSave],
@@ -102,28 +115,28 @@ export function PieceEditor({
   useEffect(() => {
     if (title === initialTitle) return;
     const body = editor?.getHTML() ?? initialBody;
-    scheduleSave(title, body, visibility);
-  }, [title, editor, initialTitle, initialBody, visibility, scheduleSave]);
+    scheduleSave(title, body, visibility, groupId);
+  }, [title, editor, initialTitle, initialBody, visibility, groupId, scheduleSave]);
 
   // Autosave on visibility change
   useEffect(() => {
-    if (visibility === initialVisibility) return;
+    if (visibility === initialVisibility && groupId === initialGroupId) return;
     const body = editor?.getHTML() ?? initialBody;
-    scheduleSave(title, body, visibility);
-  }, [visibility, initialVisibility, title, editor, initialBody, scheduleSave]);
+    scheduleSave(title, body, visibility, groupId);
+  }, [visibility, groupId, initialVisibility, initialGroupId, title, editor, initialBody, scheduleSave]);
 
   // Autosave on editor content change
   useEffect(() => {
     if (!editor) return;
     const handler = () => {
       const body = editor.getHTML();
-      scheduleSave(title, body, visibility);
+      scheduleSave(title, body, visibility, groupId);
     };
     editor.on("update", handler);
     return () => {
       editor.off("update", handler);
     };
-  }, [editor, title, visibility, scheduleSave]);
+  }, [editor, title, visibility, groupId, scheduleSave]);
 
   useEffect(() => {
     return () => {
@@ -156,15 +169,36 @@ export function PieceEditor({
           </label>
           <select
             value={visibility}
-            onChange={(e) =>
-              setVisibility(e.target.value as "public" | "group" | "private")
-            }
+            onChange={(e) => {
+              const v = e.target.value as "public" | "group" | "private";
+              setVisibility(v);
+              if (v !== "group") setGroupId(null);
+            }}
             className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text-primary focus:border-accent-primary focus:outline-none"
           >
             <option value="public">Public</option>
             <option value="group">Group</option>
             <option value="private">Private</option>
           </select>
+
+          {visibility === "group" ? (
+            groups.length === 0 ? (
+              <span className="text-xs text-text-muted">Join a group first — no groups available.</span>
+            ) : (
+              <select
+                value={groupId ?? ""}
+                onChange={(e) => setGroupId(e.target.value || null)}
+                className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text-primary focus:border-accent-primary focus:outline-none"
+              >
+                <option value="">Select a group</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            )
+          ) : null}
 
           <span
             className={`ml-auto text-xs ${

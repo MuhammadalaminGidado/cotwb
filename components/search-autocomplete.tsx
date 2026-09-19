@@ -101,9 +101,9 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
       },
       classNames: {
         root: "aa-Autocomplete",
-        form: "aa-Form !rounded-full !border !border-border !bg-bg focus-within:!border-accent-primary focus-within:!ring-1 focus-within:!ring-accent-primary",
-        input: "aa-Input !h-8 !pl-8 !pr-3 !text-sm !text-text-primary placeholder:!text-text-muted !bg-transparent",
-        submitButton: "aa-SubmitButton !absolute !left-2.5",
+        form: "aa-Form !relative !h-8 !flex !items-center !rounded-full !border !border-border !bg-bg focus-within:!border-accent-primary focus-within:!ring-1 focus-within:!ring-accent-primary",
+        input: "aa-Input !h-8 !pl-8 !pr-3 !text-sm !text-text-primary placeholder:!text-text-muted !bg-transparent [--aa-search-input-height:32px] [--aa-icon-size:16px]",
+        submitButton: "aa-SubmitButton !absolute !left-2.5 !top-1/2 !-translate-y-1/2 !h-4 !w-4 !p-0 !bg-transparent pointer-events-none [&_svg]:!h-4 [&_svg]:!w-4",
         clearButton: "aa-ClearButton",
         panel:
           "aa-Panel !absolute !left-0 !top-full !mt-2 !w-[36rem] !max-w-[90vw] !rounded-xl !border !border-border !bg-surface !shadow-xl !z-50 !overflow-hidden motion-reduce:transition-none",

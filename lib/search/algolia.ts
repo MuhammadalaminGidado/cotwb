@@ -15,6 +15,7 @@ export type AlgoliaPieceRecord = {
   authorUsername: string;
   visibility: string;
   reviewStatus: string;
+  groupId: string | null;
   publishedAt: number | null;
   createdAt: number;
 };
@@ -74,6 +75,7 @@ function buildRecord(piece: typeof pieces.$inferSelect, author: typeof users.$in
     authorUsername: author.username,
     visibility: piece.visibility,
     reviewStatus: piece.reviewStatus,
+    groupId: piece.groupId ?? null,
     publishedAt: piece.publishedAt ? Math.floor(piece.publishedAt.getTime() / 1000) : null,
     createdAt: Math.floor(piece.createdAt.getTime() / 1000),
   };
@@ -104,7 +106,8 @@ export async function getFiltersForViewer(viewer: LocalUser | null): Promise<str
   if (!viewer) return "reviewStatus:approved AND visibility:public";
   const author = `authorId:${viewer.id}`;
   if (groupIds.length > 0) {
-    return `(${author} OR reviewStatus:approved) AND (${author} OR visibility:public OR visibility:group)`;
+    const groupClause = groupIds.map((id) => `groupId:${id}`).join(" OR ");
+    return `(${author} OR reviewStatus:approved) AND (${author} OR visibility:public OR (visibility:group AND (${groupClause})))`;
   }
   return `(${author} OR reviewStatus:approved) AND (${author} OR visibility:public)`;
 }
@@ -165,7 +168,12 @@ export async function configureAlgoliaIndex(): Promise<void> {
     indexName: getIndexName(),
     indexSettings: {
       searchableAttributes: ["title", "body"],
-      attributesForFaceting: ["filterOnly(visibility)", "filterOnly(reviewStatus)", "filterOnly(authorId)"],
+      attributesForFaceting: [
+        "filterOnly(visibility)",
+        "filterOnly(reviewStatus)",
+        "filterOnly(authorId)",
+        "filterOnly(groupId)",
+      ],
       customRanking: ["desc(publishedAt)", "desc(createdAt)"],
       ranking: ["typo", "words", "filters", "proximity", "attribute", "exact", "custom"],
       highlightPreTag: "<mark>",

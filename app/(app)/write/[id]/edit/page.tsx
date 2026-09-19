@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { canWrite, currentUser } from "@/lib/auth";
 import { getPieceForEdit } from "@/lib/db/queries/pieces";
 import { EditPieceClient } from "@/components/editor/edit-piece-client";
+import { getViewerGroups } from "@/lib/db/queries/shared";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -20,6 +21,8 @@ export default async function EditPiecePage({ params }: Params) {
     notFound();
   }
 
+  const groups = await getViewerGroups(user);
+
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-8">
       <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-primary">
@@ -35,6 +38,8 @@ export default async function EditPiecePage({ params }: Params) {
           title={piece.title}
           body={piece.body}
           visibility={piece.visibility as "public" | "group" | "private"}
+          groupId={piece.groupId ?? null}
+          groups={groups}
           reviewStatus={piece.reviewStatus}
         />
       </div>

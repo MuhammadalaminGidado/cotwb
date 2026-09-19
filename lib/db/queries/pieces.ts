@@ -1,4 +1,4 @@
-import { and, count, desc, eq, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, or } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { pieceTags, pieces, tags, users } from "@/lib/db/schema";
 import type { LocalUser } from "@/lib/auth";
@@ -19,7 +19,7 @@ export function canViewPiece(
   if (piece.reviewStatus !== "approved") return false;
   if (piece.visibility === "public") return true;
   if (piece.visibility === "private") return false;
-  if (piece.visibility === "group") return viewerGroupIds.length > 0;
+  if (piece.visibility === "group") return !!piece.groupId && viewerGroupIds.includes(piece.groupId);
   return false;
 }
 
@@ -128,7 +128,10 @@ export async function getVisiblePiecesForViewer(
   if (!viewer || groupIds.length === 0) return getPublishedPieces({ limit, offset });
 
   const rows = await db.query.pieces.findMany({
-    where: and(eq(pieces.reviewStatus, "approved"), or(eq(pieces.visibility, "public"), eq(pieces.visibility, "group"))),
+    where: and(
+      eq(pieces.reviewStatus, "approved"),
+      or(eq(pieces.visibility, "public"), and(eq(pieces.visibility, "group"), inArray(pieces.groupId, groupIds))),
+    ),
     with: { author: true },
     orderBy: [desc(pieces.publishedAt), desc(pieces.createdAt)],
     limit,

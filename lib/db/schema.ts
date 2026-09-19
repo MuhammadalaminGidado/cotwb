@@ -74,6 +74,9 @@ export const pieces = pgTable("pieces", {
   promptId: uuid("prompt_id").references(() => prompts.id, {
     onDelete: "set null",
   }),
+  groupId: uuid("group_id").references(() => writingGroups.id, {
+    onDelete: "set null",
+  }),
   publishedAt: timestamp("published_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at")
@@ -330,6 +333,7 @@ export const usersRelations = relations(users, ({ many }) => ({
 export const piecesRelations = relations(pieces, ({ one, many }) => ({
   author: one(users, { fields: [pieces.authorId], references: [users.id] }),
   prompt: one(prompts, { fields: [pieces.promptId], references: [prompts.id] }),
+  group: one(writingGroups, { fields: [pieces.groupId], references: [writingGroups.id] }),
   versions: many(pieceVersions),
   reviews: many(reviews),
   pieceTags: many(pieceTags),
@@ -466,6 +470,7 @@ export const writingGroupsRelations = relations(
       references: [users.id],
     }),
     memberships: many(memberships),
+    pieces: many(pieces),
   }),
 );
 

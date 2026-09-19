@@ -1,10 +1,10 @@
 "use server";
 
-import { eq, max } from "drizzle-orm";
+import { and, eq, max } from "drizzle-orm";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db/client";
-import { pieceVersions, pieces } from "@/lib/db/schema";
+import { memberships, pieceVersions, pieces } from "@/lib/db/schema";
 import { canWrite, currentUser } from "@/lib/auth";
 import { inngest } from "@/lib/inngest/client";
 
@@ -30,18 +30,38 @@ async function ensureUniqueSlug(base: string, excludeId?: string): Promise<strin
   }
 }
 
-const createDraftSchema = z.object({
-  title: z.string().min(1, "Title is required").max(256),
-  body: z.string().min(1, "Body is required"),
-  visibility: z.enum(["public", "group", "private"]).default("public"),
-});
+const createDraftSchema = z
+  .object({
+    title: z.string().min(1, "Title is required").max(256),
+    body: z.string().min(1, "Body is required"),
+    visibility: z.enum(["public", "group", "private"]).default("public"),
+    groupId: z.string().uuid().nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.visibility === "group" && !data.groupId) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Group is required for group visibility", path: ["groupId"] });
+    }
+    if (data.visibility !== "group" && data.groupId) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Group must be empty unless visibility is group", path: ["groupId"] });
+    }
+  });
 
-const updatePieceSchema = z.object({
-  id: z.string().uuid(),
-  title: z.string().min(1).max(256).optional(),
-  body: z.string().min(1).optional(),
-  visibility: z.enum(["public", "group", "private"]).optional(),
-});
+const updatePieceSchema = z
+  .object({
+    id: z.string().uuid(),
+    title: z.string().min(1).max(256).optional(),
+    body: z.string().min(1).optional(),
+    visibility: z.enum(["public", "group", "private"]).optional(),
+    groupId: z.string().uuid().nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.visibility === "group" && !data.groupId) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Group is required for group visibility", path: ["groupId"] });
+    }
+    if (data.visibility && data.visibility !== "group" && data.groupId) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Group must be empty unless visibility is group", path: ["groupId"] });
+    }
+  });
 
 const idSchema = z.object({
   id: z.string().uuid(),
@@ -63,7 +83,15 @@ export async function createDraft(
     return { success: false, error: "You must be a writer to create drafts." };
   }
 
-  const { title, body, visibility } = parsed.data;
+  const { title, body, visibility, groupId } = parsed.data;
+  if (visibility === "group") {
+    const membership = await db.query.memberships.findFirst({
+      where: and(eq(memberships.userId, user.id), eq(memberships.groupId, groupId!)),
+    });
+    if (!membership && user.role !== "admin") {
+      return { success: false, error: "You must be a member of the selected group." };
+    }
+  }
   const baseSlug = slugify(title);
   const slug = await ensureUniqueSlug(baseSlug);
 
@@ -75,6 +103,7 @@ export async function createDraft(
       body,
       authorId: user.id,
       visibility,
+      groupId: visibility === "group" ? groupId ?? null : null,
       reviewStatus: "draft",
     })
     .returning();
@@ -111,7 +140,7 @@ export async function updatePiece(
     return { success: false, error: "You must be a writer to edit pieces." };
   }
 
-  const { id, title, body, visibility } = parsed.data;
+  const { id, title, body, visibility, groupId: inputGroupId } = parsed.data;
 
   const existing = await db.query.pieces.findFirst({
     where: eq(pieces.id, id),
@@ -124,6 +153,24 @@ export async function updatePiece(
   }
   if (existing.reviewStatus === "approved") {
     return { success: false, error: "Approved pieces cannot be edited. Create a new version." };
+  }
+
+  // Resolve final visibility/groupId for validation (covers partial updates)
+  const finalVisibility = visibility ?? existing.visibility;
+  const finalGroupId = inputGroupId !== undefined ? inputGroupId : existing.groupId;
+  if (finalVisibility === "group" && !finalGroupId) {
+    return { success: false, error: "Group is required for group visibility" };
+  }
+  if (finalVisibility !== "group" && finalGroupId) {
+    return { success: false, error: "Group must be empty unless visibility is group" };
+  }
+  if (finalVisibility === "group" && finalGroupId) {
+    const membership = await db.query.memberships.findFirst({
+      where: and(eq(memberships.userId, user.id), eq(memberships.groupId, finalGroupId)),
+    });
+    if (!membership && user.role !== "admin") {
+      return { success: false, error: "You must be a member of the selected group." };
+    }
   }
 
   // Write version row before mutating
@@ -147,7 +194,16 @@ export async function updatePiece(
     patch.slug = await ensureUniqueSlug(baseSlug, id);
   }
   if (body !== undefined) patch.body = body;
-  if (visibility !== undefined) patch.visibility = visibility;
+  if (visibility !== undefined) {
+    patch.visibility = visibility;
+    if (visibility === "group") {
+      patch.groupId = finalGroupId;
+    } else {
+      patch.groupId = null;
+    }
+  } else if (inputGroupId !== undefined) {
+    patch.groupId = finalGroupId;
+  }
 
   const [updated] = await db
     .update(pieces)

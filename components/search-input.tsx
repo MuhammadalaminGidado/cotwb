@@ -2,7 +2,12 @@ import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 export function SearchInput({ defaultValue }: { defaultValue?: string }) {
   return (
-    <form action="/search" method="GET" role="search" className="flex items-center">
+    <form
+      action="/search"
+      method="GET"
+      role="search"
+      className="flex items-center"
+    >
       <label htmlFor="global-search" className="sr-only">
         Search pieces
       </label>

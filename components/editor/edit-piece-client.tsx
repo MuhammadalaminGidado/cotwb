@@ -10,10 +10,12 @@ type Props = {
   title: string;
   body: string;
   visibility: "public" | "group" | "private";
+  groupId: string | null;
+  groups: { id: string; name: string; slug: string }[];
   reviewStatus: string;
 };
 
-export function EditPieceClient({ pieceId, title, body, visibility, reviewStatus }: Props) {
+export function EditPieceClient({ pieceId, title, body, visibility, groupId, groups, reviewStatus }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -70,6 +72,8 @@ export function EditPieceClient({ pieceId, title, body, visibility, reviewStatus
         initialTitle={title}
         initialBody={body}
         initialVisibility={visibility}
+        initialGroupId={groupId}
+        groups={groups}
       />
 
       {error ? (
