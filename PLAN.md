@@ -141,7 +141,7 @@ Server Actions and Server Components call `currentUser()` once, then `canWrite`/
 
 **5.4** Tags: `pieceTags` join, filter UI on feed page.
 
-**5.5** Search: Postgres `tsvector` column + GIN index on `pieces.body`/`title`; query fn in `lib/db/queries/search.ts`; `app/(public)/search/page.tsx`.
+**5.5** Search: Algolia (`algoliasearch` `liteClient`, `filterOnly` facets, Inngest `piece/sync` async, secured keys via `generateSecuredSearchKey` with `filters` baked); query fn in `lib/db/queries/search.ts` (re-exports `searchAlgolia`), `app/(public)/search/page.tsx` (`SearchInstant`), header `SearchAutocomplete` (autocomplete-js). Legacy Postgres `tsvector` + GIN added in `0002` then decommissioned in `0003` (drop) — no longer active.
 
 **Acceptance:** feed only shows approved+public; search returns relevant results; tag filter narrows correctly; ISR revalidates within expected window after publish.
 
