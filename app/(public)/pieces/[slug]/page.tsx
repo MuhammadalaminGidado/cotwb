@@ -4,23 +4,13 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { currentUser } from "@/lib/auth";
 import { getPieceBySlug } from "@/lib/db/queries/pieces";
-import { sanitizePieceBody } from "@/lib/sanitize";
+import { excerpt, sanitizePieceBody } from "@/lib/sanitize";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "long",
   day: "numeric",
   year: "numeric",
 });
-
-function excerpt(html: string, max = 160): string {
-  const text = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&[a-z]+;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (text.length <= max) return text;
-  return `${text.slice(0, max).trimEnd()}…`;
-}
 
 export async function generateMetadata({
   params,
@@ -30,7 +20,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const piece = await getPieceBySlug(slug, null);
   if (!piece || piece.reviewStatus !== "approved") return { title: "Piece" };
-  return { title: piece.title, description: excerpt(piece.body) };
+  return { title: piece.title, description: excerpt(piece.body, 160) };
 }
 
 export default async function PieceDetailPage({
@@ -39,8 +29,6 @@ export default async function PieceDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  // Viewer-aware fetch: author/admin can preview before approval,
-  // everyone else only sees approved pieces they're permitted to view.
   const viewer = await currentUser();
   const piece = await getPieceBySlug(slug, viewer);
   if (!piece) notFound();
@@ -66,30 +54,19 @@ export default async function PieceDetailPage({
         ) : null}
 
         <header className="mt-6">
-          <h1 className="font-serif text-3xl font-semibold tracking-tight text-text-primary">
-            {piece.title}
-          </h1>
+          <h1 className="font-serif text-3xl font-semibold tracking-tight text-text-primary">{piece.title}</h1>
           <div className="mt-3 flex items-center gap-2 text-sm text-text-muted">
-            <Link
-              href={`/authors/${piece.author.username}`}
-              className="font-medium transition-colors hover:text-text-primary"
-            >
+            <Link href={`/authors/${piece.author.username}`} className="font-medium transition-colors hover:text-text-primary">
               {piece.author.displayName ?? piece.author.username}
             </Link>
             <span aria-hidden>·</span>
             <time dateTime={piece.publishedAt?.toISOString()}>
-              {piece.publishedAt
-                ? dateFormatter.format(piece.publishedAt)
-                : dateFormatter.format(piece.createdAt)}
+              {piece.publishedAt ? dateFormatter.format(piece.publishedAt) : dateFormatter.format(piece.createdAt)}
             </time>
           </div>
         </header>
 
-        <div
-          className="piece-prose mt-8"
-          // Sanitized above with a fixed allowlist — no raw user HTML reaches the DOM.
-          dangerouslySetInnerHTML={{ __html: clean }}
-        />
+        <div className="piece-prose mt-8" dangerouslySetInnerHTML={{ __html: clean }} />
       </article>
     </>
   );

@@ -3,6 +3,7 @@ import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { canModerate, currentUser } from "@/lib/auth";
 import { getReviewQueuePieces } from "@/lib/db/queries/pieces";
 import { ReviewQueueActions } from "@/components/review-queue-actions";
+import { sanitizePieceBody } from "@/lib/sanitize";
 
 export default async function ReviewQueuePage() {
   const user = await currentUser();
@@ -51,8 +52,8 @@ export default async function ReviewQueuePage() {
               </div>
 
               <div
-                className="prose prose-sm mt-4 max-w-none text-text-primary"
-                dangerouslySetInnerHTML={{ __html: piece.body }}
+                className="piece-prose mt-4 max-w-none"
+                dangerouslySetInnerHTML={{ __html: sanitizePieceBody(piece.body) }}
               />
 
               <ReviewQueueActions pieceId={piece.id} />

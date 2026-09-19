@@ -1,21 +1,12 @@
 import Link from "next/link";
 import type { PieceWithAuthor } from "@/lib/db/queries/pieces";
+import { excerpt } from "@/lib/sanitize";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
   year: "numeric",
 });
-
-function excerpt(html: string, max = 180): string {
-  const text = html
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&[a-z]+;/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (text.length <= max) return text;
-  return `${text.slice(0, max).trimEnd()}…`;
-}
 
 export function PieceCard({ piece }: { piece: PieceWithAuthor }) {
   return (
@@ -24,22 +15,15 @@ export function PieceCard({ piece }: { piece: PieceWithAuthor }) {
         <h2 className="font-serif text-lg font-semibold text-text-primary transition-colors group-hover:text-accent-primary">
           {piece.title}
         </h2>
-        <p className="mt-1.5 text-sm leading-6 text-text-muted">
-          {excerpt(piece.body)}
-        </p>
+        <p className="mt-1.5 text-sm leading-6 text-text-muted">{excerpt(piece.body)}</p>
       </Link>
       <div className="mt-3 flex items-center gap-2 text-xs text-text-muted">
-        <Link
-          href={`/authors/${piece.author.username}`}
-          className="font-medium transition-colors hover:text-text-primary"
-        >
+        <Link href={`/authors/${piece.author.username}`} className="font-medium transition-colors hover:text-text-primary">
           {piece.author.displayName ?? piece.author.username}
         </Link>
         <span aria-hidden>·</span>
         <time dateTime={piece.publishedAt?.toISOString()}>
-          {piece.publishedAt
-            ? dateFormatter.format(piece.publishedAt)
-            : dateFormatter.format(piece.createdAt)}
+          {piece.publishedAt ? dateFormatter.format(piece.publishedAt) : dateFormatter.format(piece.createdAt)}
         </time>
       </div>
     </li>

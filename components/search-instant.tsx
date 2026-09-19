@@ -27,7 +27,6 @@ type HitType = {
   authorUsername: string;
   publishedAt: number | null;
   createdAt: number;
-  _highlightResult?: Record<string, { value: string }>;
 };
 
 function Hit({ hit }: { hit: HitType }) {
@@ -36,12 +35,10 @@ function Hit({ hit }: { hit: HitType }) {
     <article className="rounded-xl border border-border bg-surface p-6 transition-colors hover:border-border/80">
       <Link href={`/pieces/${hit.slug}`} className="group block">
         <h2 className="font-serif text-lg font-semibold text-text-primary transition-colors group-hover:text-accent-primary">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <Highlight attribute="title" hit={hit as any} />
+          <Highlight attribute="title" hit={hit as never} />
         </h2>
         <p className="mt-1.5 text-sm leading-6 text-text-muted [&_mark]:rounded-sm [&_mark]:bg-accent-primary/15 [&_mark]:px-0.5 [&_mark]:text-text-primary">
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          <Snippet attribute="body" hit={hit as any} />
+          <Snippet attribute="body" hit={hit as never} />
         </p>
       </Link>
       <div className="mt-3 flex items-center gap-2 text-xs text-text-muted">
@@ -87,8 +84,7 @@ export function SearchInstant({ appId, apiKey, indexName, filters, initialQuery 
     <InstantSearch
       indexName={indexName}
       searchClient={searchClient}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      initialUiState={{ [indexName]: { query: initialQuery } } as any}
+      initialUiState={{ [indexName]: { query: initialQuery } } as never}
       future={{ preserveSharedStateOnUnmount: true }}
     >
       <Configure filters={filters || undefined} hitsPerPage={10} highlightPreTag="<mark>" highlightPostTag="</mark>" />
@@ -100,7 +96,7 @@ export function SearchInstant({ appId, apiKey, indexName, filters, initialQuery 
           classNames={{
             form: "relative",
             input:
-              "h-10 w-full rounded-full border border-border bg-bg py-2 pl-10 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-primary focus:outline-none focus:ring-1 focus:ring-accent-primary",
+              "h-10 w-full rounded-full border border-border bg-bg py-2 pl-4 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-primary focus:outline-none focus:ring-1 focus:ring-accent-primary",
             submit: "hidden",
             reset: "hidden",
             loadingIndicator: "hidden",
@@ -110,10 +106,7 @@ export function SearchInstant({ appId, apiKey, indexName, filters, initialQuery 
 
       <EmptyBoundary>
         <div className="mt-6">
-          <Hits
-            hitComponent={Hit as unknown as () => JSX.Element}
-            classNames={{ list: "space-y-4", item: "list-none" }}
-          />
+          <Hits hitComponent={Hit as never} classNames={{ list: "space-y-4", item: "list-none" }} />
           <div className="mt-8 flex justify-center">
             <Pagination
               classNames={{

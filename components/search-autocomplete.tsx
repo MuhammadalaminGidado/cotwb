@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { autocomplete } from "@algolia/autocomplete-js";
 import { getAlgoliaResults } from "@algolia/autocomplete-preset-algolia";
 import { liteClient } from "algoliasearch/lite";
-
-// We intentionally do NOT import '@algolia/autocomplete-theme-classic' globally — we style via Tailwind tokens
-// to keep no hardcoded colors and respect prefers-reduced-motion.
 
 type Props = {
   appId: string;
@@ -26,11 +23,10 @@ type Hit = {
 export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const searchClient = liteClient(appId, apiKey);
+  const searchClient = useMemo(() => liteClient(appId, apiKey), [appId, apiKey]);
 
   useEffect(() => {
     if (!containerRef.current) return;
-    // Clear previous instance on re-render (filters may change per viewer)
     containerRef.current.innerHTML = "";
 
     const instance = autocomplete<Hit>({
@@ -85,7 +81,7 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
                 );
               },
               footer({ state }) {
-                const q = (state as unknown as { query?: string }).query ?? "";
+                const q = (state as { query?: string }).query ?? "";
                 if (!q || q.trim().length < 2) return null as unknown as string;
                 return (
                   <div className="border-t border-border px-3 py-2 text-right">
@@ -107,19 +103,18 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
         root: "aa-Autocomplete",
         form: "aa-Form !rounded-full !border !border-border !bg-bg focus-within:!border-accent-primary focus-within:!ring-1 focus-within:!ring-accent-primary",
         input: "aa-Input !h-8 !pl-8 !pr-3 !text-sm !text-text-primary placeholder:!text-text-muted !bg-transparent",
-        submitButton: "aa-SubmitButton !left-2.5",
+        submitButton: "aa-SubmitButton !absolute !left-2.5",
         clearButton: "aa-ClearButton",
         panel:
           "aa-Panel !absolute !left-0 !top-full !mt-2 !w-[36rem] !max-w-[90vw] !rounded-xl !border !border-border !bg-surface !shadow-xl !z-50 !overflow-hidden motion-reduce:transition-none",
-        item: "aa-Item !px-3 !py-2 hover:!bg-bg data-[selected=true]:!bg-bg",
+        item: "aa-Item !px-3 !py-2 hover:!bg-bg aria-[selected=true]:!bg-bg",
       },
     });
 
     return () => {
       instance.destroy();
     };
-    // searchClient is stable per appId/apiKey, but we include filters/indexName to re-init on viewer change
-  }, [appId, apiKey, indexName, filters, router, searchClient]);
+  }, [indexName, filters, router, searchClient]);
 
   return (
     <div className="relative w-40 sm:w-56">
