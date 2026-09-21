@@ -97,7 +97,7 @@ export function SearchInstant({ appId, apiKey, indexName, filters, initialQuery 
             form: "relative",
             input:
               "h-10 w-full rounded-full border border-border bg-bg py-2 pl-10 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-primary focus:outline-none focus:ring-1 focus:ring-accent-primary",
-            submit: "absolute inset-y-0 left-0 flex items-center justify-center pl-3 text-text-muted pointer-events-none [&_svg]:h-4 [&_svg]:w-4",
+            submit: "absolute inset-y-0 left-0 flex items-center justify-center pl-3 text-accent-primary pointer-events-none [&_svg]:h-4 [&_svg]:w-4",
             reset: "hidden",
             loadingIndicator: "hidden",
           }}

@@ -13,7 +13,7 @@ export function SearchInput({ defaultValue }: { defaultValue?: string }) {
       </label>
       <div className="relative">
         <MagnifyingGlassIcon
-          className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted"
+          className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-accent-primary"
           aria-hidden
         />
         <input
