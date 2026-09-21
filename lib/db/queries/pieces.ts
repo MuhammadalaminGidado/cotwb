@@ -31,7 +31,7 @@ export async function getPieceById(pieceId: string, viewer: LocalUser | null): P
   if (!piece) return null;
   const groupIds = await getViewerGroupIds(viewer);
   if (!canViewPiece(piece, viewer, groupIds)) return null;
-  return piece as PieceWithAuthor;
+  return { ...piece, author: { ...piece.author } } as PieceWithAuthor;
 }
 
 export async function getPieceBySlug(slug: string, viewer: LocalUser | null): Promise<PieceWithAuthor | null> {
@@ -42,7 +42,7 @@ export async function getPieceBySlug(slug: string, viewer: LocalUser | null): Pr
   if (!piece) return null;
   const groupIds = await getViewerGroupIds(viewer);
   if (!canViewPiece(piece, viewer, groupIds)) return null;
-  return piece as PieceWithAuthor;
+  return { ...piece, author: { ...piece.author } } as PieceWithAuthor;
 }
 
 export async function getPublishedPieces(opts?: {
@@ -64,7 +64,7 @@ export async function getPublishedPieces(opts?: {
       .orderBy(desc(pieces.publishedAt), desc(pieces.createdAt))
       .limit(limit)
       .offset(offset);
-    return rows.map((r) => ({ ...r.piece, author: r.author }));
+    return rows.map((r) => ({ ...r.piece, author: { ...r.author } }));
   }
 
   const rows = await db.query.pieces.findMany({
@@ -74,7 +74,7 @@ export async function getPublishedPieces(opts?: {
     limit,
     offset,
   });
-  return rows as PieceWithAuthor[];
+  return rows.map((r) => ({ ...r, author: { ...r.author } })) as PieceWithAuthor[];
 }
 
 export async function getFeedTagCounts(): Promise<{ id: string; name: string; slug: string; count: number }[]> {
@@ -94,7 +94,7 @@ export async function getOwnPieces(authorId: string, viewer: LocalUser | null): 
     with: { author: true },
     orderBy: [desc(pieces.updatedAt)],
   });
-  return rows as PieceWithAuthor[];
+  return rows.map((r) => ({ ...r, author: { ...r.author } })) as PieceWithAuthor[];
 }
 
 export async function getReviewQueuePieces(): Promise<PieceWithAuthor[]> {
@@ -103,7 +103,7 @@ export async function getReviewQueuePieces(): Promise<PieceWithAuthor[]> {
     with: { author: true },
     orderBy: [desc(pieces.updatedAt)],
   });
-  return rows as PieceWithAuthor[];
+  return rows.map((r) => ({ ...r, author: { ...r.author } })) as PieceWithAuthor[];
 }
 
 export async function getPieceForEdit(pieceId: string, viewer: LocalUser | null): Promise<PieceWithAuthor | null> {
@@ -114,7 +114,7 @@ export async function getPieceForEdit(pieceId: string, viewer: LocalUser | null)
   });
   if (!piece) return null;
   if (piece.authorId !== viewer.id && viewer.role !== "admin") return null;
-  return piece as PieceWithAuthor;
+  return { ...piece, author: { ...piece.author } } as PieceWithAuthor;
 }
 
 export async function getVisiblePiecesForViewer(
@@ -137,5 +137,5 @@ export async function getVisiblePiecesForViewer(
     limit,
     offset,
   });
-  return rows as PieceWithAuthor[];
+  return rows.map((r) => ({ ...r, author: { ...r.author } })) as PieceWithAuthor[];
 }

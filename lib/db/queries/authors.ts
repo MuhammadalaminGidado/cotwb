@@ -38,5 +38,5 @@ export async function getPublishedPiecesByAuthor(
     offset,
   });
 
-  return rows as PieceWithAuthor[];
+  return rows.map((r) => ({ ...r, author: { ...r.author } })) as PieceWithAuthor[];
 }

@@ -23,7 +23,15 @@ type Hit = {
 export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const searchClient = useMemo(() => liteClient(appId, apiKey), [appId, apiKey]);
+  const baseClient = useMemo(() => liteClient(appId, apiKey), [appId, apiKey]);
+  const searchClient = useMemo(
+    () => ({
+      ...baseClient,
+      search: ((...args: Parameters<typeof baseClient.search>) =>
+        (baseClient.search as unknown as (...a: unknown[]) => Promise<unknown>)(...args).then((res) => structuredClone(res as object))) as typeof baseClient.search,
+    }),
+    [baseClient],
+  );
 
   useEffect(() => {
     if (!containerRef.current) return;

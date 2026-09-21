@@ -78,7 +78,15 @@ function EmptyBoundary({ children }: { children: React.ReactNode }) {
 }
 
 export function SearchInstant({ appId, apiKey, indexName, filters, initialQuery }: Props) {
-  const searchClient = useMemo(() => liteClient(appId, apiKey), [appId, apiKey]);
+  const baseClient = useMemo(() => liteClient(appId, apiKey), [appId, apiKey]);
+  const searchClient = useMemo(
+    () => ({
+      ...baseClient,
+      search: (requests: Parameters<typeof baseClient.search>[0]) =>
+        baseClient.search(requests).then((res) => structuredClone(res)),
+    }),
+    [baseClient],
+  );
 
   return (
     <InstantSearch
