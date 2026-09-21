@@ -1,17 +1,21 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ClerkUserMenu } from "@/components/user-menu";
-import { SearchInput } from "@/components/search-input";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 import { canModerate, currentUser } from "@/lib/auth";
 import { hasClerk } from "@/lib/clerk-config";
 import { generateSecuredSearchKey, hasAlgolia } from "@/lib/search/algolia";
 
 function SearchSlot({ secured }: { secured: Awaited<ReturnType<typeof generateSecuredSearchKey>> }) {
-  return secured ? (
+  if (!secured) {
+    return (
+      <div role="alert" className="rounded-full border border-warning/30 bg-warning/10 px-3 py-1.5 text-xs font-medium text-text-primary">
+        Search unavailable
+      </div>
+    );
+  }
+  return (
     <SearchAutocomplete appId={secured.appId} apiKey={secured.securedKey} indexName={secured.indexName} filters={secured.filters} />
-  ) : (
-    <SearchInput />
   );
 }
 

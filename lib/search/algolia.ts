@@ -208,7 +208,8 @@ export async function generateSecuredSearchKey(
       restrictions: { filters, validUntil },
     });
     return { securedKey, filters, indexName: creds.indexName, appId: creds.appId };
-  } catch {
+  } catch (e) {
+    console.error("[algolia] generateSecuredSearchKey failed", e);
     // Fail closed — do not expose plain search key with client-side filters that can be dropped
     return null;
   }
