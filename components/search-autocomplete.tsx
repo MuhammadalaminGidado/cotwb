@@ -110,12 +110,13 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
       classNames: {
         root: "aa-Autocomplete",
         form: "aa-Form !relative !h-8 !flex !items-center !rounded-full !border !border-border !bg-bg focus-within:!border-accent-primary focus-within:!ring-1 focus-within:!ring-accent-primary",
-        input: "aa-Input !h-8 !pl-8 !pr-3 !text-sm !text-text-primary placeholder:!text-text-muted !bg-transparent [--aa-search-input-height:32px] [--aa-icon-size:16px]",
+        input:
+          "aa-Input !h-8 !pl-8 !pr-8 !text-sm !text-text-primary placeholder:!text-text-muted !bg-transparent [--aa-search-input-height:32px] [--aa-icon-size:16px]",
         submitButton: "aa-SubmitButton !absolute !left-2.5 !top-1/2 !-translate-y-1/2 !h-4 !w-4 !p-0 !bg-transparent pointer-events-none !text-accent-primary [&_svg]:!h-4 [&_svg]:!w-4 [&_svg]:!text-accent-primary",
-        clearButton: "aa-ClearButton",
+        clearButton: "aa-ClearButton !absolute !right-2 !top-1/2 !-translate-y-1/2 !h-4 !w-4 !p-0 !bg-transparent !text-text-muted hover:!text-text-primary [&_svg]:!h-4 [&_svg]:!w-4",
         panel:
-          "aa-Panel !absolute !left-0 !top-full !mt-2 !w-[36rem] !max-w-[90vw] !rounded-xl !border !border-border !bg-surface !shadow-xl !z-50 !overflow-hidden motion-reduce:transition-none",
-        item: "aa-Item !px-3 !py-2 hover:!bg-bg aria-[selected=true]:!bg-bg",
+          "aa-Panel !absolute !left-0 !top-full !mt-2 !w-full !min-w-[20rem] !max-w-[90vw] sm:!w-[28rem] !rounded-xl !border !border-border !bg-surface !shadow-xl !z-50 !overflow-hidden motion-reduce:transition-none",
+        item: "aa-Item !px-3 !py-2 hover:!bg-bg aria-[selected=true]:!bg-bg cursor-pointer",
       },
     });
 
