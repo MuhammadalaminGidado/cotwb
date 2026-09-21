@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { createElement, Fragment, useEffect, useMemo, useRef } from "react";
+import { createRoot } from "react-dom/client";
 import { useRouter } from "next/navigation";
 import { autocomplete } from "@algolia/autocomplete-js";
 import { getAlgoliaResults } from "@algolia/autocomplete-preset-algolia";
@@ -35,13 +36,22 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
 
   useEffect(() => {
     if (!containerRef.current) return;
-    containerRef.current.innerHTML = "";
+    const container = containerRef.current;
 
     const instance = autocomplete<Hit>({
-      container: containerRef.current,
+      container,
       placeholder: "Search…",
       openOnFocus: true,
       detachedMediaQuery: "none",
+      renderer: {
+        createElement,
+        Fragment,
+        render: (vnode, root) => {
+          const r = root as HTMLElement & { _reactRoot?: ReturnType<typeof createRoot> };
+          if (!r._reactRoot) r._reactRoot = createRoot(r);
+          r._reactRoot.render(vnode as React.ReactNode);
+        },
+      },
       getSources({ query }) {
         if (query.trim().length < 2) return [];
         return [
@@ -121,7 +131,15 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
     });
 
     return () => {
-      instance.destroy();
+      try {
+        if (container && document.contains(container) && !Object.isFrozen(instance)) {
+          instance.destroy();
+        } else if (container) {
+          container.innerHTML = "";
+        }
+      } catch {
+        if (container) container.innerHTML = "";
+      }
     };
   }, [indexName, filters, router, searchClient]);
 
