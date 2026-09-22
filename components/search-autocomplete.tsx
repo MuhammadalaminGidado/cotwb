@@ -147,7 +147,7 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
     <div className="relative w-full">
       <div ref={containerRef} />
       <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 text-[11px] text-text-muted sm:flex" aria-hidden>
-        Powered by {apiKey ? "Algolia" : "Typesense"}
+        Powered by Algolia
       </span>
     </div>
   );

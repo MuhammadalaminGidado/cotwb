@@ -4,38 +4,17 @@ import { ClerkUserMenu } from "@/components/user-menu";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 import { canModerate, currentUser } from "@/lib/auth";
 import { hasClerk } from "@/lib/clerk-config";
-import { generateSecuredSearchKey as generateAlgoliaKey, hasAlgolia } from "@/lib/search/algolia";
-import { generateScopedSearchKey as generateTypesenseKey, hasTypesense } from "@/lib/search/typesense";
+import { generateSecuredSearchKey, hasAlgolia } from "@/lib/search/algolia";
 import { UserNavDropdown } from "@/components/user-nav-dropdown";
-import { SearchTypesenseAutocomplete } from "@/components/search-typesense-autocomplete";
 
-function SearchSlot({
-  algoliaSecured,
-  typesense,
-}: {
-  algoliaSecured: Awaited<ReturnType<typeof generateAlgoliaKey>>;
-  typesense: Awaited<ReturnType<typeof generateTypesenseKey>>;
-}) {
-  // Prefer Typesense when configured (Cloud), fallback to Algolia
-  if (typesense) {
-    return (
-      <SearchTypesenseAutocomplete
-        host={typesense.host}
-        port={typesense.port}
-        protocol={typesense.protocol}
-        apiKey={typesense.searchKey}
-        collection={typesense.collection}
-        filterBy={typesense.filterBy}
-      />
-    );
-  }
-  if (algoliaSecured) {
+function SearchSlot({ secured }: { secured: Awaited<ReturnType<typeof generateSecuredSearchKey>> }) {
+  if (secured) {
     return (
       <SearchAutocomplete
-        appId={algoliaSecured.appId}
-        apiKey={algoliaSecured.securedKey}
-        indexName={algoliaSecured.indexName}
-        filters={algoliaSecured.filters}
+        appId={secured.appId}
+        apiKey={secured.securedKey}
+        indexName={secured.indexName}
+        filters={secured.filters}
       />
     );
   }
@@ -63,9 +42,7 @@ function NavLinks({ mobile }: { mobile?: boolean }) {
 export async function SiteHeader() {
   const user = await currentUser();
   const clerkReady = hasClerk();
-  // Prefer Typesense Cloud when configured, fallback to Algolia
-  const typesenseSecured = hasTypesense() ? await generateTypesenseKey(user) : null;
-  const algoliaSecured = !typesenseSecured && hasAlgolia() ? await generateAlgoliaKey(user) : null;
+  const secured = hasAlgolia() ? await generateSecuredSearchKey(user) : null;
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-surface/80 backdrop-blur">
@@ -81,7 +58,7 @@ export async function SiteHeader() {
 
         <div className="hidden flex-1 justify-center sm:flex">
           <div className="w-full max-w-[min(680px,55vw)]">
-            <SearchSlot algoliaSecured={algoliaSecured} typesense={typesenseSecured} />
+            <SearchSlot secured={secured} />
           </div>
         </div>
 
@@ -106,7 +83,7 @@ export async function SiteHeader() {
       </div>
 
       <div className="border-t border-border px-6 py-2 sm:hidden">
-        <SearchSlot algoliaSecured={algoliaSecured} typesense={typesenseSecured} />
+        <SearchSlot secured={secured} />
       </div>
 
       <nav className="flex items-center gap-6 border-t border-border px-6 py-2 sm:hidden">
