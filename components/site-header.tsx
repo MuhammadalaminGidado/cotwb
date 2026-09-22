@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ClerkUserMenu } from "@/components/user-menu";
-import { SearchAutocomplete } from "@/components/search-autocomplete";
+import { SearchDropdown } from "@/components/search-dropdown";
 import { SearchInput } from "@/components/search-input";
 import { canModerate, currentUser } from "@/lib/auth";
 import { hasClerk } from "@/lib/clerk-config";
@@ -11,7 +11,7 @@ import { UserNavDropdown } from "@/components/user-nav-dropdown";
 function SearchSlot({ secured, autocomplete = true }: { secured: Awaited<ReturnType<typeof generateSecuredSearchKey>>; autocomplete?: boolean }) {
   if (secured && autocomplete) {
     return (
-      <SearchAutocomplete
+      <SearchDropdown
         appId={secured.appId}
         apiKey={secured.securedKey}
         indexName={secured.indexName}

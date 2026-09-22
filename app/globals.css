@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "../theme/tokens.css";
-@import "@algolia/autocomplete-theme-classic/dist/theme.css";
 
 @theme inline {
   --color-accent-primary: var(--color-accent-primary);
@@ -36,38 +35,6 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Algolia Autocomplete — map theme vars to tokens (light/dark) */
-:root {
-  --aa-background-color-rgb: 255, 255, 255;
-  --aa-input-background-color-rgb: 250, 247, 242;
-  --aa-text-color-rgb: 42, 42, 40;
-  --aa-muted-color-rgb: 107, 101, 96;
-  --aa-primary-color-rgb: 44, 91, 124;
-  --aa-panel-border-color-rgb: 228, 220, 208;
-  --aa-input-border-color-rgb: 228, 220, 208;
-  --aa-icon-color-rgb: 44, 91, 124;
-  --aa-selected-color-rgb: 44, 91, 124;
-  --aa-font-family: var(--font-sans);
-}
-[data-theme="dark"] {
-  --aa-background-color-rgb: 41, 38, 31;
-  --aa-input-background-color-rgb: 30, 28, 26;
-  --aa-text-color-rgb: 242, 238, 230;
-  --aa-muted-color-rgb: 171, 163, 152;
-  --aa-primary-color-rgb: 111, 160, 196;
-  --aa-panel-border-color-rgb: 58, 54, 46;
-  --aa-input-border-color-rgb: 58, 54, 46;
-  --aa-icon-color-rgb: 111, 160, 196;
-  --aa-selected-color-rgb: 111, 160, 196;
-}
-.aa-Panel {
-  z-index: 50;
-}
-@media (prefers-reduced-motion: reduce) {
-  .aa-Autocomplete *, .aa-Panel, .aa-Item {
-    transition: none !important;
-  }
-}
 
 button:not(:disabled),
 a,
