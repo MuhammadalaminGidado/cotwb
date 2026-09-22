@@ -23,6 +23,7 @@ type Hit = {
 
 export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const instanceRef = useRef<ReturnType<typeof autocomplete<Hit>> | null>(null);
   const router = useRouter();
   const baseClient = useMemo(() => liteClient(appId, apiKey), [appId, apiKey]);
   const searchClient = useMemo(
@@ -37,6 +38,26 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
   useEffect(() => {
     if (!containerRef.current) return;
     const container = containerRef.current;
+
+    // Destroy previous instance before creating a new one — autocomplete-js
+    // does not support multiple instances on the same page/container.
+    try {
+      instanceRef.current?.destroy();
+    } catch {
+      // ignore
+    }
+    instanceRef.current = null;
+    // Unmount any leaked React roots from a previous mount
+    container.querySelectorAll("*").forEach((n) => {
+      const r = n as HTMLElement & { _reactRoot?: { unmount: () => void } };
+      try {
+        r._reactRoot?.unmount();
+      } catch {
+        // ignore
+      }
+      delete r._reactRoot;
+    });
+    container.innerHTML = "";
 
     const instance = autocomplete<Hit>({
       container,
@@ -130,15 +151,30 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
       },
     });
 
+    instanceRef.current = instance;
+
     return () => {
       try {
-        if (container && document.contains(container) && !Object.isFrozen(instance)) {
-          instance.destroy();
-        } else if (container) {
-          container.innerHTML = "";
-        }
+        instance.destroy();
       } catch {
-        if (container) container.innerHTML = "";
+        // ignore — container may already be detached
+      } finally {
+        instanceRef.current = null;
+        // Unmount React roots created by the custom renderer
+        try {
+          container.querySelectorAll("*").forEach((n) => {
+            const r = n as HTMLElement & { _reactRoot?: { unmount: () => void } };
+            try {
+              r._reactRoot?.unmount();
+            } catch {
+              // ignore
+            }
+            delete r._reactRoot;
+          });
+        } catch {
+          // ignore
+        }
+        if (document.contains(container)) container.innerHTML = "";
       }
     };
   }, [indexName, filters, router, searchClient]);

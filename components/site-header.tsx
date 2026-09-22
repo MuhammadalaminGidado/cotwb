@@ -2,13 +2,14 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ClerkUserMenu } from "@/components/user-menu";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
+import { SearchInput } from "@/components/search-input";
 import { canModerate, currentUser } from "@/lib/auth";
 import { hasClerk } from "@/lib/clerk-config";
 import { generateSecuredSearchKey, hasAlgolia } from "@/lib/search/algolia";
 import { UserNavDropdown } from "@/components/user-nav-dropdown";
 
-function SearchSlot({ secured }: { secured: Awaited<ReturnType<typeof generateSecuredSearchKey>> }) {
-  if (secured) {
+function SearchSlot({ secured, autocomplete = true }: { secured: Awaited<ReturnType<typeof generateSecuredSearchKey>>; autocomplete?: boolean }) {
+  if (secured && autocomplete) {
     return (
       <SearchAutocomplete
         appId={secured.appId}
@@ -17,6 +18,9 @@ function SearchSlot({ secured }: { secured: Awaited<ReturnType<typeof generateSe
         filters={secured.filters}
       />
     );
+  }
+  if (secured && !autocomplete) {
+    return <SearchInput />;
   }
   return (
     <div role="alert" className="rounded-full border border-warning/30 bg-warning/10 px-3 py-1.5 text-xs font-medium text-text-primary">
@@ -83,7 +87,7 @@ export async function SiteHeader() {
       </div>
 
       <div className="border-t border-border px-6 py-2 sm:hidden">
-        <SearchSlot secured={secured} />
+        <SearchSlot secured={secured} autocomplete={false} />
       </div>
 
       <nav className="flex items-center gap-6 border-t border-border px-6 py-2 sm:hidden">
