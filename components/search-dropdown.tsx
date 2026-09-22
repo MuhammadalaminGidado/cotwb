@@ -153,7 +153,7 @@ export function SearchDropdown({ appId, apiKey, indexName, filters }: Props) {
         Powered by Algolia
       </span>
       {showPanel ? (
-        <div className="absolute left-0 top-full z-50 mt-2 w-full min-w-[20rem] max-w-[90vw] overflow-hidden rounded-xl border border-border bg-surface shadow-xl sm:w-[28rem]">
+        <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
           {error ? (
             <div role="alert" className="px-3 py-4 text-center text-sm text-text-muted">
               Search failed. <span className="font-medium text-accent-primary">Try again</span>

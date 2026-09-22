@@ -1,7 +1,7 @@
 # AGENTS.md — Chip of the Writer's Block (COTWB) App
 
 This file defines how agents collaborate on this codebase. Five roles: **Planner**, **Coder/Tester**, **Critic**, **Integrator**, **Tracker**. Reference `PLAN.md` for the phase-by-phase spec — this file governs *how* agents work through it, not *what* to build.
-Always use lts node version: `nvm use 22.19.0` (via `export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"`).
+Always use node version 24.20.0: `nvm use 24.20.0` (via `export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"`).
 
 ---
 
