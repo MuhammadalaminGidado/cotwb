@@ -6,6 +6,7 @@ import { canModerate, currentUser } from "@/lib/auth";
 import { hasClerk } from "@/lib/clerk-config";
 import { generateSecuredSearchKey as generateAlgoliaKey, hasAlgolia } from "@/lib/search/algolia";
 import { generateScopedSearchKey as generateTypesenseKey, hasTypesense } from "@/lib/search/typesense";
+import { UserNavDropdown } from "@/components/user-nav-dropdown";
 import { SearchTypesenseAutocomplete } from "@/components/search-typesense-autocomplete";
 
 function SearchSlot({
@@ -45,7 +46,7 @@ function SearchSlot({
   );
 }
 
-function NavLinks({ isAdmin, isAuthed, mobile }: { isAdmin: boolean; isAuthed: boolean; mobile?: boolean }) {
+function NavLinks({ mobile }: { mobile?: boolean }) {
   const cls = mobile ? "text-sm font-medium text-text-muted" : "text-sm font-medium text-text-muted transition-colors hover:text-text-primary";
   return (
     <>
@@ -55,16 +56,6 @@ function NavLinks({ isAdmin, isAuthed, mobile }: { isAdmin: boolean; isAuthed: b
       <Link href="/write/new" className={cls}>
         Write
       </Link>
-      {isAdmin ? (
-        <Link href="/review-queue" className={cls}>
-          Review queue
-        </Link>
-      ) : null}
-      {isAuthed ? (
-        <Link href="/settings" className={cls}>
-          Settings
-        </Link>
-      ) : null}
     </>
   );
 }
@@ -84,7 +75,7 @@ export async function SiteHeader() {
             COTWB
           </Link>
           <nav className="hidden items-center gap-6 sm:flex">
-            <NavLinks isAdmin={canModerate(user)} isAuthed={!!user} />
+            <NavLinks />
           </nav>
         </div>
 
@@ -97,9 +88,10 @@ export async function SiteHeader() {
         <div className="flex items-center gap-3 shrink-0">
           <ThemeToggle />
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <span className="hidden text-sm text-text-muted sm:inline">{user.username}</span>
               {clerkReady ? <ClerkUserMenu /> : null}
+              <UserNavDropdown isAdmin={canModerate(user)} />
             </div>
           ) : (
             <Link
@@ -118,7 +110,7 @@ export async function SiteHeader() {
       </div>
 
       <nav className="flex items-center gap-6 border-t border-border px-6 py-2 sm:hidden">
-        <NavLinks isAdmin={canModerate(user)} isAuthed={!!user} mobile />
+        <NavLinks mobile />
       </nav>
     </header>
   );
