@@ -4,18 +4,44 @@ import { ClerkUserMenu } from "@/components/user-menu";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 import { canModerate, currentUser } from "@/lib/auth";
 import { hasClerk } from "@/lib/clerk-config";
-import { generateSecuredSearchKey, hasAlgolia } from "@/lib/search/algolia";
+import { generateSecuredSearchKey as generateAlgoliaKey, hasAlgolia } from "@/lib/search/algolia";
+import { generateScopedSearchKey as generateTypesenseKey, hasTypesense } from "@/lib/search/typesense";
+import { SearchTypesenseAutocomplete } from "@/components/search-typesense-autocomplete";
 
-function SearchSlot({ secured }: { secured: Awaited<ReturnType<typeof generateSecuredSearchKey>> }) {
-  if (!secured) {
+function SearchSlot({
+  algoliaSecured,
+  typesense,
+}: {
+  algoliaSecured: Awaited<ReturnType<typeof generateAlgoliaKey>>;
+  typesense: Awaited<ReturnType<typeof generateTypesenseKey>>;
+}) {
+  // Prefer Typesense when configured (Cloud), fallback to Algolia
+  if (typesense) {
     return (
-      <div role="alert" className="rounded-full border border-warning/30 bg-warning/10 px-3 py-1.5 text-xs font-medium text-text-primary">
-        Search unavailable
-      </div>
+      <SearchTypesenseAutocomplete
+        host={typesense.host}
+        port={typesense.port}
+        protocol={typesense.protocol}
+        apiKey={typesense.searchKey}
+        collection={typesense.collection}
+        filterBy={typesense.filterBy}
+      />
+    );
+  }
+  if (algoliaSecured) {
+    return (
+      <SearchAutocomplete
+        appId={algoliaSecured.appId}
+        apiKey={algoliaSecured.securedKey}
+        indexName={algoliaSecured.indexName}
+        filters={algoliaSecured.filters}
+      />
     );
   }
   return (
-    <SearchAutocomplete appId={secured.appId} apiKey={secured.securedKey} indexName={secured.indexName} filters={secured.filters} />
+    <div role="alert" className="rounded-full border border-warning/30 bg-warning/10 px-3 py-1.5 text-xs font-medium text-text-primary">
+      Search unavailable
+    </div>
   );
 }
 
@@ -46,24 +72,29 @@ function NavLinks({ isAdmin, isAuthed, mobile }: { isAdmin: boolean; isAuthed: b
 export async function SiteHeader() {
   const user = await currentUser();
   const clerkReady = hasClerk();
-  const secured = hasAlgolia() ? await generateSecuredSearchKey(user) : null;
+  // Prefer Typesense Cloud when configured, fallback to Algolia
+  const typesenseSecured = hasTypesense() ? await generateTypesenseKey(user) : null;
+  const algoliaSecured = !typesenseSecured && hasAlgolia() ? await generateAlgoliaKey(user) : null;
 
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-surface/80 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-3">
-        <div className="flex items-center gap-6">
+      <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-6 py-3">
+        <div className="flex items-center gap-6 shrink-0">
           <Link href="/" className="font-serif text-lg font-semibold tracking-tight text-text-primary" title="Chip of the Writer's Block">
             COTWB
           </Link>
-          <nav className="hidden items-center gap-4 sm:flex">
+          <nav className="hidden items-center gap-6 sm:flex">
             <NavLinks isAdmin={canModerate(user)} isAuthed={!!user} />
           </nav>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:block">
-            <SearchSlot secured={secured} />
+        <div className="hidden flex-1 justify-center sm:flex">
+          <div className="w-full max-w-[min(680px,55vw)]">
+            <SearchSlot algoliaSecured={algoliaSecured} typesense={typesenseSecured} />
           </div>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
           <ThemeToggle />
           {user ? (
             <div className="flex items-center gap-3">
@@ -83,10 +114,10 @@ export async function SiteHeader() {
       </div>
 
       <div className="border-t border-border px-6 py-2 sm:hidden">
-        <SearchSlot secured={secured} />
+        <SearchSlot algoliaSecured={algoliaSecured} typesense={typesenseSecured} />
       </div>
 
-      <nav className="flex items-center gap-4 border-t border-border px-6 py-2 sm:hidden">
+      <nav className="flex items-center gap-6 border-t border-border px-6 py-2 sm:hidden">
         <NavLinks isAdmin={canModerate(user)} isAuthed={!!user} mobile />
       </nav>
     </header>
