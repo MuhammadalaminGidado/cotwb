@@ -25,6 +25,10 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
   const containerRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<ReturnType<typeof autocomplete<Hit>> | null>(null);
   const router = useRouter();
+  const routerRef = useRef(router);
+  useEffect(() => {
+    routerRef.current = router;
+  }, [router]);
   const baseClient = useMemo(() => liteClient(appId, apiKey), [appId, apiKey]);
   const searchClient = useMemo(
     () => ({
@@ -99,7 +103,7 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
               return `/pieces/${item.slug}`;
             },
             onSelect({ item }) {
-              router.push(`/pieces/${item.slug}`);
+              routerRef.current.push(`/pieces/${item.slug}`);
             },
             templates: {
               item({ item, components }) {
@@ -126,7 +130,7 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
                   <div className="border-t border-border px-3 py-2 text-right">
                     <button
                       type="button"
-                      onClick={() => router.push(`/search?q=${encodeURIComponent(q)}`)}
+                      onClick={() => routerRef.current.push(`/search?q=${encodeURIComponent(q)}`)}
                       className="text-xs font-medium text-accent-primary hover:text-accent-primary-light"
                     >
                       See all results for “{q}” →
@@ -177,7 +181,11 @@ export function SearchAutocomplete({ appId, apiKey, indexName, filters }: Props)
         if (document.contains(container)) container.innerHTML = "";
       }
     };
-  }, [indexName, filters, router, searchClient]);
+  // Note: router accessed via routerRef so effect does not re-run (and re-create
+  // the autocomplete instance) on every navigation-related render. Re-creating
+  // the instance without a settled destroy is what trips the
+  // "multiple instances" warning and leaves a detached panel.
+  }, [indexName, filters, searchClient]);
 
   return (
     <div className="relative w-full">
