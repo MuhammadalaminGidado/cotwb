@@ -49,8 +49,8 @@ export async function SiteHeader() {
   const secured = hasAlgolia() ? await generateSecuredSearchKey(user) : null;
 
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-surface/80 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-5xl items-center gap-3 px-6 py-3">
+    <header className="sticky top-3 z-10 px-4">
+      <div className="mx-auto flex w-full max-w-5xl items-center gap-3 rounded-full border border-border bg-surface/80 px-4 py-2 shadow-sm backdrop-blur">
         <div className="flex items-center gap-6 shrink-0">
           <Link href="/" className="font-serif text-lg font-semibold tracking-tight text-text-primary" title="Chip of the Writer's Block">
             COTWB
@@ -86,11 +86,11 @@ export async function SiteHeader() {
         </div>
       </div>
 
-      <div className="border-t border-border px-6 py-2 sm:hidden">
+      <div className="mx-auto mt-2 w-full max-w-5xl rounded-2xl border border-border bg-surface/80 px-4 py-2 shadow-sm backdrop-blur sm:hidden">
         <SearchSlot secured={secured} autocomplete={false} />
       </div>
 
-      <nav className="flex items-center gap-6 border-t border-border px-6 py-2 sm:hidden">
+      <nav className="mx-auto mt-2 flex w-full max-w-5xl items-center gap-6 rounded-full border border-border bg-surface/80 px-6 py-2 shadow-sm backdrop-blur sm:hidden">
         <NavLinks mobile />
       </nav>
     </header>
