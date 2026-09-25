@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useClerk } from "@clerk/nextjs";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ArrowRightOnRectangleIcon, ChevronDownIcon, Cog6ToothIcon, QueueListIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -99,18 +99,18 @@ export function UserAccountMenu({
         aria-expanded={open}
         aria-label={`Account menu for ${username}`}
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-full border border-border bg-surface py-1 pl-1 pr-2 transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
+        className="flex h-7 items-center gap-1.5 rounded-full border border-border bg-surface py-0.5 pl-0.5 pr-2 transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
       >
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={image} alt="" aria-hidden className="h-8 w-8 rounded-full object-cover" />
+          <img src={image} alt="" aria-hidden className="h-5 w-5 rounded-full object-cover" />
         ) : (
-          <span aria-hidden className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-primary text-xs font-semibold text-text-inverse">
+          <span aria-hidden className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-primary text-[10px] font-semibold text-text-inverse">
             {initials(username)}
           </span>
         )}
-        <span className="hidden max-w-28 truncate text-sm text-text-muted sm:inline">{username}</span>
-        <ChevronDownIcon className="h-4 w-4 text-text-muted" aria-hidden />
+        <span className="hidden max-w-24 truncate text-[13px] text-text-muted sm:inline">{username}</span>
+        <ChevronDownIcon className="h-3.5 w-3.5 text-text-muted" aria-hidden />
       </button>
       {open ? (
         <div
@@ -128,8 +128,9 @@ export function UserAccountMenu({
               role="menuitem"
               onKeyDown={(e) => onItemKeyDown(e, reviewIdx)}
               onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-primary"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-primary"
             >
+              <QueueListIcon className="h-4 w-4 shrink-0 text-text-muted" aria-hidden />
               Review queue
             </Link>
           ) : null}
@@ -141,8 +142,9 @@ export function UserAccountMenu({
             role="menuitem"
             onKeyDown={(e) => onItemKeyDown(e, settingsIdx)}
             onClick={() => setOpen(false)}
-            className="block px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-primary"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-primary"
           >
+            <Cog6ToothIcon className="h-4 w-4 shrink-0 text-text-muted" aria-hidden />
             Settings
           </Link>
           {clerkReady && signOutIdx >= 0 ? (
@@ -154,8 +156,9 @@ export function UserAccountMenu({
               role="menuitem"
               onKeyDown={(e) => onItemKeyDown(e, signOutIdx)}
               onClick={handleSignOut}
-              className="block w-full px-4 py-2 text-left text-sm font-medium text-text-primary transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-primary"
+              className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-medium text-text-primary transition-colors hover:bg-bg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent-primary"
             >
+              <ArrowRightOnRectangleIcon className="h-4 w-4 shrink-0 text-text-muted" aria-hidden />
               Sign out
             </button>
           ) : null}
