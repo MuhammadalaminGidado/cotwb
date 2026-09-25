@@ -7,7 +7,7 @@ P  Status  Detail
 2  x
 3  x
 4  x
-5  ~       5.1 x, 5.2 x, 5.3 x, 5.4 x, 5.5 x
+5  x
 6  .
 7  .
 8  .
