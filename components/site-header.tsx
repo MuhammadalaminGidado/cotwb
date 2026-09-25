@@ -60,7 +60,7 @@ export async function SiteHeader() {
         </div>
 
         <div className="hidden flex-1 justify-center sm:flex">
-          <div className="w-full max-w-[min(680px,55vw)]">
+          <div className="w-full max-w-xs sm:max-w-sm">
             <SearchSlot secured={secured} />
           </div>
         </div>

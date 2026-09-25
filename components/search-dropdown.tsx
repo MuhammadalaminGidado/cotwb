@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRightIcon, DocumentTextIcon, ExclamationTriangleIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { liteClient } from "algoliasearch/lite";
 import { sanitizePieceBody } from "@/lib/sanitize";
 
@@ -141,26 +142,32 @@ export function SearchDropdown({ appId, apiKey, indexName, filters }: Props) {
           aria-activedescendant={selected >= 0 && hits[selected] ? `search-hit-${hits[selected].objectID}` : undefined}
           autoComplete="off"
           spellCheck={false}
-          className="h-8 w-full rounded-full border border-border bg-bg py-1 pl-8 pr-8 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-primary focus:outline-none focus:ring-1 focus:ring-accent-primary"
+          className="h-7 w-full truncate rounded-full border border-border bg-bg py-1 pl-8 pr-8 text-[13px] text-text-primary placeholder:text-text-muted focus:border-accent-primary focus:outline-none focus:ring-1 focus:ring-accent-primary"
         />
         {loading ? (
           <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted" aria-hidden>
-            <span className="block h-4 w-4 animate-spin rounded-full border-2 border-border border-t-accent-primary motion-reduce:animate-none" />
+            <span className="block h-3.5 w-3.5 animate-spin rounded-full border-2 border-border border-t-accent-primary motion-reduce:animate-none" />
           </span>
         ) : null}
       </div>
-      <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 text-[11px] text-text-muted sm:flex" aria-hidden>
+      <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 text-[11px] text-text-muted lg:flex" aria-hidden>
         Powered by Algolia
       </span>
       {showPanel ? (
         <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-border bg-surface shadow-xl">
           {error ? (
-            <div role="alert" className="px-3 py-4 text-center text-sm text-text-muted">
-              Search failed. <span className="font-medium text-accent-primary">Try again</span>
+            <div role="alert" className="flex items-center justify-center gap-2 px-3 py-4 text-center text-sm text-text-muted">
+              <ExclamationTriangleIcon className="h-4 w-4 shrink-0 text-warning" aria-hidden />
+              <span>
+                Search failed. <span className="font-medium text-accent-primary">Try again</span>
+              </span>
             </div>
           ) : hits.length === 0 && !loading ? (
             <div className="px-3 py-4 text-center text-sm text-text-muted">
-              No results. <span className="font-medium text-accent-primary">See all results</span>
+              <MagnifyingGlassIcon className="mx-auto h-5 w-5 text-text-muted" aria-hidden />
+              <p className="mt-1 truncate">
+                No results. <span className="font-medium text-accent-primary">See all results</span>
+              </p>
             </div>
           ) : (
             <ul id={listId} role="listbox" aria-label="Search suggestions">
@@ -172,13 +179,18 @@ export function SearchDropdown({ appId, apiKey, indexName, filters }: Props) {
                     onFocus={() => setSelected(idx)}
                     className={`block px-3 py-2 transition-colors hover:bg-bg aria-[selected=true]:bg-bg ${idx === selected ? "bg-bg" : ""}`}
                   >
-                    <span
-                      className="block font-serif text-sm font-semibold text-text-primary [&_mark]:rounded-sm [&_mark]:bg-accent-primary/15 [&_mark]:px-0.5 [&_mark]:text-text-primary"
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizePieceBody(hit._highlightResult?.title?.value ?? hit.title),
-                      }}
-                    />
-                    <span className="mt-0.5 block text-xs text-text-muted">by {hit.authorUsername}</span>
+                    <span className="flex items-start gap-2">
+                      <DocumentTextIcon className="mt-0.5 h-4 w-4 shrink-0 text-text-muted" aria-hidden />
+                      <span className="min-w-0 flex-1">
+                        <span
+                          className="block truncate font-serif text-sm font-semibold text-text-primary [&_mark]:rounded-sm [&_mark]:bg-accent-primary/15 [&_mark]:px-0.5 [&_mark]:text-text-primary"
+                          dangerouslySetInnerHTML={{
+                            __html: sanitizePieceBody(hit._highlightResult?.title?.value ?? hit.title),
+                          }}
+                        />
+                        <span className="mt-0.5 block truncate text-xs text-text-muted">by {hit.authorUsername}</span>
+                      </span>
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -188,9 +200,10 @@ export function SearchDropdown({ appId, apiKey, indexName, filters }: Props) {
             <button
               type="button"
               onClick={() => router.push(`/search?q=${encodeURIComponent(query.trim())}`)}
-              className="text-xs font-medium text-accent-primary hover:text-accent-primary-light"
+              className="inline-flex max-w-full items-center gap-1 text-xs font-medium text-accent-primary hover:text-accent-primary-light"
             >
-              See all results for “{query.trim()}” →
+              <span className="truncate">See all results for “{query.trim()}”</span>
+              <ArrowRightIcon className="h-3.5 w-3.5 shrink-0" aria-hidden />
             </button>
           </div>
         </div>
