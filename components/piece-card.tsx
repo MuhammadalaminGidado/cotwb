@@ -10,7 +10,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 
 export function PieceCard({ piece }: { piece: PieceWithAuthor }) {
   return (
-    <li className="rounded-xl border border-border bg-surface p-6">
+    <li className="rounded-xl border border-border bg-surface p-4">
       <Link href={`/pieces/${piece.slug}`} className="group block">
         <h2 className="font-serif text-lg font-semibold text-text-primary transition-colors group-hover:text-accent-primary">
           {piece.title}
