@@ -13,6 +13,7 @@ function makePiece(overrides: Partial<Record<string, unknown>> = {}) {
     visibility: "public",
     reviewStatus: "approved",
     promptId: null,
+    groupId: null,
     publishedAt: new Date(),
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -58,7 +59,7 @@ describe("canViewPiece", () => {
     });
 
     it("author can view own rejected", () => {
-      const piece = makePiece({ authorId, reviewStatus: "rejected", visibility: "group" });
+      const piece = makePiece({ authorId, reviewStatus: "rejected", visibility: "group", groupId: "g1" });
       expect(canViewPiece(piece, authorUser, [])).toBe(true);
     });
 
@@ -73,7 +74,7 @@ describe("canViewPiece", () => {
     });
 
     it("admin can view group piece without membership", () => {
-      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group" });
+      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group", groupId: "g1" });
       expect(canViewPiece(piece, adminUser, [])).toBe(true);
     });
   });
@@ -139,29 +140,39 @@ describe("canViewPiece", () => {
     });
   });
 
-  describe("approved + group — only group members (or author/admin)", () => {
+  describe("approved + group — only specific group members (or author/admin)", () => {
     it("hidden from anon", () => {
-      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group" });
+      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group", groupId: "g1" });
       expect(canViewPiece(piece, anon, [])).toBe(false);
     });
 
     it("hidden from non-member", () => {
-      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group" });
+      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group", groupId: "g1" });
       expect(canViewPiece(piece, otherUser, [])).toBe(false);
     });
 
-    it("visible to group member", () => {
-      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group" });
-      expect(canViewPiece(piece, otherUser, ["group1"])).toBe(true);
+    it("hidden from member of different group", () => {
+      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group", groupId: "g1" });
+      expect(canViewPiece(piece, otherUser, ["g2"])).toBe(false);
     });
 
-    it("visible to member of any group (current implementation)", () => {
-      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group" });
-      expect(canViewPiece(piece, otherUser, ["any-group-id"])).toBe(true);
+    it("visible to member of correct group", () => {
+      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group", groupId: "g1" });
+      expect(canViewPiece(piece, otherUser, ["g1"])).toBe(true);
+    });
+
+    it("visible to member of one of multiple groups", () => {
+      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group", groupId: "g1" });
+      expect(canViewPiece(piece, otherUser, ["g2", "g1"])).toBe(true);
+    });
+
+    it("hidden when groupId is null (misconfigured)", () => {
+      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group", groupId: null });
+      expect(canViewPiece(piece, otherUser, ["g1"])).toBe(false);
     });
 
     it("visible to author without membership (author bypass)", () => {
-      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group" });
+      const piece = makePiece({ authorId, reviewStatus: "approved", visibility: "group", groupId: "g1" });
       expect(canViewPiece(piece, authorUser, [])).toBe(true);
     });
   });
@@ -175,10 +186,10 @@ describe("canViewPiece", () => {
     it("null viewer with group ids still respects visibility", () => {
       // anon with group ids shouldn't happen, but test defensively
       const pub = makePiece({ authorId, reviewStatus: "approved", visibility: "public" });
-      const grp = makePiece({ authorId, reviewStatus: "approved", visibility: "group" });
+      const grp = makePiece({ authorId, reviewStatus: "approved", visibility: "group", groupId: "g1" });
       const prv = makePiece({ authorId, reviewStatus: "approved", visibility: "private" });
       expect(canViewPiece(pub, anon, ["g1"])).toBe(true);
-      expect(canViewPiece(grp, anon, ["g1"])).toBe(true); // anon + group ids still counts as group member per current logic
+      expect(canViewPiece(grp, anon, ["g1"])).toBe(true); // anon + groupIds still counts per current logic (getViewerGroupIds for null is [] in prod)
       expect(canViewPiece(prv, anon, ["g1"])).toBe(false);
     });
   });

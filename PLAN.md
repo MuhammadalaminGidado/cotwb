@@ -141,7 +141,7 @@ Server Actions and Server Components call `currentUser()` once, then `canWrite`/
 
 **5.4** Tags: `pieceTags` join, filter UI on feed page.
 
-**5.5** Search: Postgres `tsvector` column + GIN index on `pieces.body`/`title`; query fn in `lib/db/queries/search.ts`; `app/(public)/search/page.tsx`.
+**5.5** Search: Algolia (`algoliasearch` `liteClient`, `filterOnly` facets, Inngest `piece/sync` async, secured keys via `generateSecuredSearchKey` with `filters` baked); query fn in `lib/db/queries/search.ts` (re-exports `searchAlgolia`), `app/(public)/search/page.tsx` (`SearchInstant`), header `SearchAutocomplete` (autocomplete-js). Legacy Postgres `tsvector` + GIN added in `0002` then decommissioned in `0003` (drop) — no longer active.
 
 **Acceptance:** feed only shows approved+public; search returns relevant results; tag filter narrows correctly; ISR revalidates within expected window after publish.
 
@@ -214,6 +214,22 @@ function canInteract(user: User | null) {
 **10.3** Add theme toggle UI component to nav (visible control wired to `ThemeProvider` from 1.3).
 
 **Acceptance:** full app reflects real palette, toggle works with no flash-of-wrong-theme on load, zero hardcoded colors remain outside `theme/tokens.css`.
+
+---
+
+## Phase 11 — Home Discovery Grid (filler content)
+
+Filler only — no new tables, routes, or backend. Runs after Phase 10.
+
+**11.1** `app/(public)/page.tsx` shell `max-w-2xl` → `max-w-6xl`, `lg:grid lg:grid-cols-[220px_minmax(0,1fr)_300px] lg:gap-6`. Single column stacks on mobile (center feed first, side rails below).
+
+**11.2** Left rail (sticky `top-20 self-start`, `hidden lg:block`): Tags (existing `getFeedTagCounts` chips, vertical) + Groups (`getViewerGroups` → joined groups, else browse link). Placeholder copy when empty (`No tags yet`, `No groups yet`).
+
+**11.3** Center: existing Latest pieces feed unchanged (`getPublishedPieces` paginated, `PieceCard`, `page`/`tag` params intact).
+
+**11.4** Right rail (sticky `top-20 self-start`, `hidden lg:block`): News filler (latest 5 `approved+public` compact rows — title + author + time, no excerpt) + Prompts teaser (static filler copy + link). Placeholder copy when empty (`Trending soon`, `No activity yet`).
+
+**Acceptance:** desktop 3-column, mobile single-column stacked; all reads through `lib/db/queries/` (no inline visibility); tokens only; skeletons mirror `app/(public)/loading.tsx` per rail; `build` + `tests` green.
 
 ---
 

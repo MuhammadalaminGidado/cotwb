@@ -1,15 +1,15 @@
-# Progress
+NEXT: 6.1 — Comments & Reactions (postComment)
+BLOCKED: none
 
-Phase 0 — Scaffolding             done
-Phase 1 — Theming Foundation      done
-Phase 2 — Database Schema         done
-Phase 3 — Auth                    done
-Phase 4 — Core Writing Flow       done
-Phase 5 — Public Discovery        pending
-Phase 6 — Comments & Reactions    pending
-Phase 7 — Collections/Groups      pending
-Phase 8 — Background Jobs         pending
-Phase 9 — Moderation              pending
-Phase 10 — Theme Application      pending
-
-Blocked: none
+P  Status  Detail
+0  x
+1  x
+2  x
+3  x
+4  x
+5  ~       5.1 x, 5.2 x, 5.3 x, 5.4 x, 5.5 x
+6  .
+7  .
+8  .
+9  .
+10 .

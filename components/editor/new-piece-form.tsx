@@ -4,11 +4,12 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createDraft } from "@/lib/actions/pieces";
 
-export function NewPieceForm() {
+export function NewPieceForm({ groups }: { groups: { id: string; name: string; slug: string }[] }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [visibility, setVisibility] = useState<"public" | "group" | "private">("public");
+  const [groupId, setGroupId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -17,7 +18,12 @@ export function NewPieceForm() {
     setError(null);
 
     startTransition(async () => {
-      const result = await createDraft({ title, body: body || "<p></p>", visibility });
+      const result = await createDraft({
+        title,
+        body: body || "<p></p>",
+        visibility,
+        groupId: visibility === "group" ? groupId : null,
+      });
       if (result.success) {
         router.push(`/write/${result.pieceId}/edit`);
       } else {
@@ -41,7 +47,11 @@ export function NewPieceForm() {
         <label className="text-sm font-medium text-text-primary">Visibility</label>
         <select
           value={visibility}
-          onChange={(e) => setVisibility(e.target.value as "public" | "group" | "private")}
+          onChange={(e) => {
+            const v = e.target.value as "public" | "group" | "private";
+            setVisibility(v);
+            if (v !== "group") setGroupId(null);
+          }}
           className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text-primary focus:border-accent-primary focus:outline-none"
         >
           <option value="public">Public</option>
@@ -49,6 +59,28 @@ export function NewPieceForm() {
           <option value="private">Private</option>
         </select>
       </div>
+
+      {visibility === "group" ? (
+        <div className="flex items-center gap-3">
+          <label className="text-sm font-medium text-text-primary">Group</label>
+          {groups.length === 0 ? (
+            <span className="text-sm text-text-muted">Join a group first — no groups available.</span>
+          ) : (
+            <select
+              value={groupId ?? ""}
+              onChange={(e) => setGroupId(e.target.value || null)}
+              className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-text-primary focus:border-accent-primary focus:outline-none"
+            >
+              <option value="">Select a group</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.name}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      ) : null}
 
       <div className="rounded-xl border border-border bg-surface">
         <textarea
@@ -72,7 +104,7 @@ export function NewPieceForm() {
       <div className="flex justify-end">
         <button
           type="submit"
-          disabled={isPending || !title.trim()}
+          disabled={isPending || !title.trim() || (visibility === "group" && !groupId)}
           className="rounded-full bg-accent-primary px-6 py-2.5 text-sm font-medium text-text-inverse transition-colors hover:bg-accent-primary-light disabled:opacity-50"
         >
           {isPending ? "Creating…" : "Create draft"}

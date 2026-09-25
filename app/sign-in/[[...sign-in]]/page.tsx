@@ -11,7 +11,7 @@ export default async function SignInPage({
   searchParams?: Promise<{ redirect_url?: string }>;
 }) {
   const params = await searchParams;
-  const redirectUrl = getSafeRedirect(params?.redirect_url, "/onboarding");
+  const redirectUrl = getSafeRedirect(params?.redirect_url, "/");
 
   if (!hasClerk()) {
     return (
@@ -45,7 +45,6 @@ export default async function SignInPage({
       <div className="flex flex-1 items-center justify-center py-8">
         <SignIn
           appearance={clerkAppearance}
-          forceRedirectUrl={redirectUrl}
           fallbackRedirectUrl={redirectUrl}
         />
       </div>
