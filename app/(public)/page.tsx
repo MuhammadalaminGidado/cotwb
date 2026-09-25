@@ -1,6 +1,8 @@
 import { PieceCard } from "@/components/piece-card";
 import { SiteHeader } from "@/components/site-header";
+import { currentUser } from "@/lib/auth";
 import { getFeedTagCounts, getPublishedPieces } from "@/lib/db/queries/pieces";
+import { getViewerGroups } from "@/lib/db/queries/shared";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -36,6 +38,14 @@ export default async function FeedPage({
   } catch (e) {
     console.error("[feed] getFeedTagCounts failed", e);
   }
+  let news: Awaited<ReturnType<typeof getPublishedPieces>> = [];
+  try {
+    news = await getPublishedPieces({ limit: 5 });
+  } catch (e) {
+    console.error("[feed] news failed", e);
+  }
+  const viewer = await currentUser();
+  const groups = await getViewerGroups(viewer);
   const hasNext = rows.length > PAGE_SIZE;
   const pieces = rows.slice(0, PAGE_SIZE);
 
@@ -50,7 +60,58 @@ export default async function FeedPage({
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-10 lg:grid lg:grid-cols-[220px_minmax(0,1fr)_300px] lg:gap-6">
+        <aside className="hidden lg:block" aria-label="Discover">
+          <div className="sticky top-20 space-y-6">
+            <section className="rounded-xl border border-border bg-surface p-4" aria-label="Tags">
+              <h2 className="text-sm font-semibold text-text-primary">Tags</h2>
+              {tagSlug ? (
+                <Link
+                  href="/"
+                  className="mt-3 inline-flex items-center gap-1 rounded-full border border-accent-primary bg-accent-primary px-3 py-1 text-xs font-medium text-text-inverse transition-colors hover:bg-accent-primary-light"
+                  aria-label={`Clear tag filter: ${tagSlug}`}
+                >
+                  {tagSlug} <XMarkIcon className="h-3.5 w-3.5" aria-hidden />
+                </Link>
+              ) : null}
+              {feedTags.length === 0 && !tagSlug ? (
+                <p className="mt-3 text-sm text-text-muted">No tags yet.</p>
+              ) : (
+                <ul className="mt-3 space-y-1.5">
+                  {feedTags
+                    .filter((t) => t.slug !== tagSlug)
+                    .map((tag) => (
+                      <li key={tag.id}>
+                        <Link
+                          href={`/?tag=${tag.slug}`}
+                          className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-text-muted transition-colors hover:bg-bg hover:text-text-primary"
+                        >
+                          {tag.name}
+                          <span className="text-[10px] text-text-muted opacity-70">{tag.count}</span>
+                        </Link>
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </section>
+            <section className="rounded-xl border border-border bg-surface p-4" aria-label="Groups">
+              <h2 className="text-sm font-semibold text-text-primary">Groups</h2>
+              {groups.length === 0 ? (
+                <p className="mt-3 text-sm text-text-muted">No groups yet.</p>
+              ) : (
+                <ul className="mt-3 space-y-1.5">
+                  {groups.map((g) => (
+                    <li key={g.id} className="truncate text-sm font-medium text-text-primary">
+                      {g.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+        </aside>
+
+        <div className="min-w-0">
         <h1 className="font-serif text-2xl font-semibold tracking-tight text-text-primary">
           {tagSlug ? `Pieces tagged “${tagSlug}”` : "Latest pieces"}
         </h1>
@@ -59,7 +120,7 @@ export default async function FeedPage({
         </p>
 
         {feedTags.length > 0 ? (
-          <div className="mt-5 flex flex-wrap items-center gap-2">
+          <div className="mt-5 flex flex-wrap items-center gap-2 lg:hidden">
             {tagSlug ? (
               <Link
                 href="/"
@@ -131,6 +192,43 @@ export default async function FeedPage({
             )}
           </nav>
         ) : null}
+        </div>
+
+        <aside className="hidden lg:block" aria-label="More">
+          <div className="sticky top-20 space-y-6">
+            <section className="rounded-xl border border-border bg-surface p-4" aria-label="News">
+              <h2 className="text-sm font-semibold text-text-primary">News</h2>
+              {news.length === 0 ? (
+                <p className="mt-3 text-sm text-text-muted">No activity yet. Trending soon.</p>
+              ) : (
+                <ul className="mt-3 space-y-3">
+                  {news.map((n) => (
+                    <li key={n.id} className="min-w-0">
+                      <Link
+                        href={`/pieces/${n.slug}`}
+                        className="block truncate text-sm font-medium text-text-primary transition-colors hover:text-accent-primary"
+                      >
+                        {n.title}
+                      </Link>
+                      <p className="mt-0.5 truncate text-xs text-text-muted">
+                        by {n.author.displayName ?? n.author.username}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+            <section className="rounded-xl border border-border bg-surface p-4" aria-label="Prompts">
+              <h2 className="text-sm font-semibold text-text-primary">Prompts</h2>
+              <p className="mt-3 text-sm leading-6 text-text-muted">
+                Weekly prompts are coming soon. Check back for something to write about.
+              </p>
+              <span className="mt-3 inline-flex text-sm font-medium text-text-muted">
+                Browse prompts →
+              </span>
+            </section>
+          </div>
+        </aside>
       </main>
     </>
   );
