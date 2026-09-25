@@ -50,7 +50,7 @@ export default async function FeedPage({
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
         <h1 className="font-serif text-2xl font-semibold tracking-tight text-text-primary">
           {tagSlug ? `Pieces tagged “${tagSlug}”` : "Latest pieces"}
         </h1>
@@ -59,7 +59,7 @@ export default async function FeedPage({
         </p>
 
         {feedTags.length > 0 ? (
-          <div className="mt-3 flex flex-wrap items-center gap-2">
+          <div className="mt-5 flex flex-wrap items-center gap-2">
             {tagSlug ? (
               <Link
                 href="/"
@@ -87,7 +87,7 @@ export default async function FeedPage({
         ) : null}
 
         {pieces.length === 0 ? (
-          <div className="mt-6 rounded-xl border border-border bg-surface p-6 text-center">
+          <div className="mt-10 rounded-xl border border-border bg-surface p-8 text-center">
             <p className="text-sm text-text-muted">
               {page > 1
                 ? "No pieces on this page."
@@ -97,7 +97,7 @@ export default async function FeedPage({
             </p>
           </div>
         ) : (
-          <ul className="mt-5 space-y-3">
+          <ul className="mt-8 space-y-4">
             {pieces.map((piece) => (
               <PieceCard key={piece?.id} piece={piece} />
             ))}
@@ -106,7 +106,7 @@ export default async function FeedPage({
 
         {page > 1 || hasNext ? (
           <nav
-            className="mt-6 flex items-center justify-between"
+            className="mt-8 flex items-center justify-between"
             aria-label="Pagination"
           >
             {page > 1 ? (
