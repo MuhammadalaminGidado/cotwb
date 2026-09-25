@@ -1,12 +1,11 @@
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { ClerkUserMenu } from "@/components/user-menu";
 import { SearchDropdown } from "@/components/search-dropdown";
 import { SearchInput } from "@/components/search-input";
 import { canModerate, currentUser } from "@/lib/auth";
 import { hasClerk } from "@/lib/clerk-config";
 import { generateSecuredSearchKey, hasAlgolia } from "@/lib/search/algolia";
-import { UserNavDropdown } from "@/components/user-nav-dropdown";
+import { UserAccountMenu } from "@/components/user-account-menu";
 
 function SearchSlot({ secured, autocomplete = true }: { secured: Awaited<ReturnType<typeof generateSecuredSearchKey>>; autocomplete?: boolean }) {
   if (secured && autocomplete) {
@@ -69,11 +68,12 @@ export async function SiteHeader() {
         <div className="flex items-center gap-3 shrink-0">
           <ThemeToggle />
           {user ? (
-            <div className="flex items-center gap-2">
-              <span className="hidden text-sm text-text-muted sm:inline">{user.username}</span>
-              {clerkReady ? <ClerkUserMenu /> : null}
-              <UserNavDropdown isAdmin={canModerate(user)} />
-            </div>
+            <UserAccountMenu
+              username={user.username}
+              image={user.image}
+              isAdmin={canModerate(user)}
+              clerkReady={clerkReady}
+            />
           ) : (
             <Link
               href="/sign-in"
