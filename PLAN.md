@@ -217,6 +217,22 @@ function canInteract(user: User | null) {
 
 ---
 
+## Phase 11 — Home Discovery Grid (filler content)
+
+Filler only — no new tables, routes, or backend. Runs after Phase 10.
+
+**11.1** `app/(public)/page.tsx` shell `max-w-2xl` → `max-w-6xl`, `lg:grid lg:grid-cols-[220px_minmax(0,1fr)_300px] lg:gap-6`. Single column stacks on mobile (center feed first, side rails below).
+
+**11.2** Left rail (sticky `top-20 self-start`, `hidden lg:block`): Tags (existing `getFeedTagCounts` chips, vertical) + Groups (`getViewerGroups` → joined groups, else browse link). Placeholder copy when empty (`No tags yet`, `No groups yet`).
+
+**11.3** Center: existing Latest pieces feed unchanged (`getPublishedPieces` paginated, `PieceCard`, `page`/`tag` params intact).
+
+**11.4** Right rail (sticky `top-20 self-start`, `hidden lg:block`): News filler (latest 5 `approved+public` compact rows — title + author + time, no excerpt) + Prompts teaser (static filler copy + link). Placeholder copy when empty (`Trending soon`, `No activity yet`).
+
+**Acceptance:** desktop 3-column, mobile single-column stacked; all reads through `lib/db/queries/` (no inline visibility); tokens only; skeletons mirror `app/(public)/loading.tsx` per rail; `build` + `tests` green.
+
+---
+
 ## Recommended agent skills for this build
 
 If the coding agent has access to a skills system (e.g. Claude Code skills), these are the relevant ones for this project:
